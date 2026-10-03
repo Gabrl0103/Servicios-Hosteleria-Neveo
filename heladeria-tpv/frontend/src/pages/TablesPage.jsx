@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { getTables, createTable, renameTable, deleteTable, updateTablePosition } from '../api/tables'
 import { formatCurrency } from '../utils/format'
 import { useSession } from '../context/SessionContext'
@@ -17,6 +17,9 @@ export default function TablesPage() {
   const [newName, setNewName] = useState('')
   const [editing, setEditing] = useState(null)
   const navigate = useNavigate()
+  const location = useLocation()
+  // Confirmacion que llega desde el detalle de mesa ("Cuenta guardada: $X").
+  const [notice, setNotice] = useState(location.state?.notice || '')
 
   const containerRef = useRef(null)
   const dragRef = useRef(null)
@@ -49,6 +52,14 @@ export default function TablesPage() {
     }
     load()
   }, [cashRegister, navigate])
+
+  useEffect(() => {
+    if (!notice) return
+    // Limpia el estado de navegacion para que no reaparezca al recargar.
+    navigate('.', { replace: true, state: null })
+    const id = setTimeout(() => setNotice(''), 3500)
+    return () => clearTimeout(id)
+  }, [notice, navigate])
 
   const handleMouseDown = useCallback((e, table) => {
     if (e.button !== 0) return
@@ -168,6 +179,11 @@ export default function TablesPage() {
           </button>
         </div>
 
+        {notice && (
+          <p style={{ display: 'inline-block', background: 'var(--green-bg)', border: '1px solid var(--green-border)', color: 'var(--green-text)', fontSize: 14, fontWeight: 800, padding: '8px 14px', borderRadius: 10, margin: '0 0 12px' }}>
+            ✓ {notice}
+          </p>
+        )}
         {error && <p style={{ color: 'var(--red-text)' }}>{error}</p>}
 
         <div

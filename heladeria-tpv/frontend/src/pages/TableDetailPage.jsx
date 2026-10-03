@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { getProducts } from '../api/products'
 import { getTable, getTablePendingItems, addProductToTable, removeProductFromTable } from '../api/tables'
@@ -24,9 +24,31 @@ export default function TableDetailPage() {
   const [showPayment, setShowPayment] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  // Guardados en curso (agregar, sumar/restar, quitar). "Dejar en la cuenta"
+  // espera a que terminen antes de consultar el total y navegar.
+  const inFlight = useRef(new Set())
+  const savingRef = useRef(false)
+
+  function track(promise) {
+    inFlight.current.add(promise)
+    const done = () => inFlight.current.delete(promise)
+    promise.then(done, done)
+    return promise
+  }
 
   function loadTable() {
     getTable(tableId).then(setTable).catch((err) => setError(err.message))
+  }
+
+  function restoreCart(prods, items) {
+    return items
+      .map((item) => {
+        const product = prods.find((p) => p.id === item.product.id)
+        return product ? { product, quantity: item.quantity, note: '' } : null
+      })
+      .filter(Boolean)
   }
 
   useEffect(() => {
@@ -38,13 +60,7 @@ export default function TableDetailPage() {
     getProducts(false).then((prods) => {
       setProducts(prods)
       getTablePendingItems(tableId).then((items) => {
-        const restored = items
-          .map((item) => {
-            const product = prods.find((p) => p.id === item.product.id)
-            return product ? { product, quantity: item.quantity, note: '' } : null
-          })
-          .filter(Boolean)
-        setCart(restored)
+        setCart(restoreCart(prods, items))
       }).catch(() => {})
     }).catch((err) => setError(err.message))
   }, [cashRegister, navigate, tableId])
@@ -66,7 +82,7 @@ export default function TableDetailPage() {
     const product = productForQuantity
     setProductForQuantity(null)
     try {
-      const updated = await addProductToTable(table.id, product.id, quantity)
+      const updated = await track(addProductToTable(table.id, product.id, quantity))
       setTable(updated)
       setCart((prev) => {
         const existing = prev.find((i) => i.product.id === product.id)
@@ -87,8 +103,8 @@ export default function TableDetailPage() {
     if (!item) return
     try {
       const updated = delta > 0
-        ? await addProductToTable(table.id, productId, 1)
-        : await removeProductFromTable(table.id, productId, 1)
+        ? await track(addProductToTable(table.id, productId, 1))
+        : await track(removeProductFromTable(table.id, productId, 1))
       setTable(updated)
       setCart((prev) =>
         prev
@@ -104,7 +120,7 @@ export default function TableDetailPage() {
     const item = cart.find((i) => i.product.id === productId)
     if (!item) return
     try {
-      const updated = await removeProductFromTable(table.id, productId, item.quantity)
+      const updated = await track(removeProductFromTable(table.id, productId, item.quantity))
       setTable(updated)
       setCart((prev) => prev.filter((i) => i.product.id !== productId))
     } catch (err) {
@@ -122,12 +138,46 @@ export default function TableDetailPage() {
     setError('')
     try {
       for (const item of cart) {
-        await removeProductFromTable(table.id, item.product.id, item.quantity)
+        await track(removeProductFromTable(table.id, item.product.id, item.quantity))
       }
       setCart([])
       loadTable()
     } catch (err) {
       setError(err.message)
+    }
+  }
+
+  /**
+   * "Dejar en la cuenta": no escribe nada. Espera los guardados en curso,
+   * consulta el total real de la mesa al backend y vuelve a Mesas con la
+   * confirmacion. Si algo fallo, se queda en la mesa mostrando lo guardado.
+   */
+  async function handleLeaveOnAccount() {
+    if (savingRef.current) return
+    savingRef.current = true
+    setSaving(true)
+    setError('')
+    try {
+      let failure = null
+      while (inFlight.current.size > 0) {
+        const results = await Promise.allSettled([...inFlight.current])
+        const rejected = results.find((r) => r.status === 'rejected')
+        if (rejected) failure = rejected.reason
+      }
+      if (failure) {
+        const [fresh, items] = await Promise.all([getTable(tableId), getTablePendingItems(tableId)])
+        setTable(fresh)
+        setCart(restoreCart(products, items))
+        setError(`No se pudo guardar todo en la cuenta: ${failure.message}. Se muestra lo que quedó guardado.`)
+        return
+      }
+      const fresh = await getTable(tableId)
+      navigate('/mesas', { state: { notice: `Cuenta guardada: ${formatCurrency(fresh.pendingTotal)}` } })
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      savingRef.current = false
+      setSaving(false)
     }
   }
 
@@ -305,6 +355,14 @@ export default function TableDetailPage() {
             style={{ width: '100%', fontSize: 17, padding: 16 }}
           >
             Cobrar este pedido
+          </button>
+          <button
+            disabled={cart.length === 0 || saving}
+            onClick={handleLeaveOnAccount}
+            className="btn-outline"
+            style={{ width: '100%', fontSize: 14, padding: 11, marginTop: 10 }}
+          >
+            {saving ? 'Guardando...' : 'Dejar en la cuenta'}
           </button>
         </div>
       </aside>
