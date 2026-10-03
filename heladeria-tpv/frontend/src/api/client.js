@@ -1,9 +1,10 @@
 import axios from 'axios'
 
-// El backend Spring Boot corre siempre en localhost, en el mismo equipo.
-// Cuando se empaqueta con Electron, este puerto es fijo y no cambia.
+// Rutas relativas: el backend sirve la app y la API desde el mismo origen
+// (http://127.0.0.1:8080 en Electron, o la URL de Tailscale en remoto).
+// En desarrollo, Vite reenvia /api al backend (ver vite.config.js).
 const client = axios.create({
-  baseURL: 'http://localhost:8080/api',
+  baseURL: '/api',
   timeout: 10000,
 })
 

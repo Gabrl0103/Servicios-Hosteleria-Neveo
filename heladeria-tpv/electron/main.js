@@ -3,13 +3,20 @@ const path = require('path')
 const { spawn } = require('child_process')
 const http = require('http')
 const fs = require('fs')
+const { pathToFileURL } = require('url')
 
 let backendProcess = null
 let mainWindow = null
 
 const isDev = !app.isPackaged
 const BACKEND_PORT = 8080
-const BACKEND_URL = `http://localhost:${BACKEND_PORT}/api/products`
+// 127.0.0.1 literal, nunca "localhost": en Windows puede resolver a IPv6 (::1)
+// y el backend escucha solo en IPv4.
+const BACKEND_ORIGIN = `http://127.0.0.1:${BACKEND_PORT}`
+const BACKEND_URL = `${BACKEND_ORIGIN}/api/products`
+// En produccion el backend sirve tambien la interfaz (un solo origen, igual
+// que el acceso remoto por Tailscale). En desarrollo se usa Vite.
+const APP_ORIGIN = isDev ? 'http://127.0.0.1:5173' : BACKEND_ORIGIN
 
 function getAppDataDir() {
   // Carpeta persistente del usuario, fuera de la carpeta de instalacion,
@@ -42,6 +49,12 @@ function getJarPath() {
   return path.join(process.resourcesPath, 'backend', 'heladeria-tpv.jar')
 }
 
+function getFrontendDir() {
+  // Archivos sueltos en resources/frontend (extraResources, fuera de app.asar):
+  // Java no puede leer dentro de un .asar.
+  return path.join(process.resourcesPath, 'frontend')
+}
+
 function startBackend() {
   return new Promise((resolve, reject) => {
     const javaExecutable = getJavaExecutable()
@@ -52,7 +65,13 @@ function startBackend() {
       return
     }
 
-    backendProcess = spawn(javaExecutable, ['-jar', jarPath], {
+    const args = ['-jar', jarPath]
+    if (!isDev) {
+      const frontendUrl = pathToFileURL(getFrontendDir()).href + '/'
+      args.push(`--spring.web.resources.static-locations=${frontendUrl}`)
+    }
+
+    backendProcess = spawn(javaExecutable, args, {
       env: { ...process.env, APP_DATA_DIR: getAppDataDir() },
     })
 
@@ -103,16 +122,12 @@ function createWindow() {
 
   mainWindow.setMenuBarVisibility(false)
 
-  if (isDev) {
-    mainWindow.loadURL('http://localhost:5173')
-  } else {
-    mainWindow.loadFile(path.join(process.resourcesPath, 'frontend', 'index.html'))
-  }
+  mainWindow.loadURL(`${APP_ORIGIN}/`)
 
   mainWindow.webContents.setWindowOpenHandler(({ url, features }) => {
     const width = parseInt((features.match(/width=(\d+)/) || [])[1]) || 420
     const height = parseInt((features.match(/height=(\d+)/) || [])[1]) || 720
-    const parsed = new URL(url, 'http://localhost')
+    const parsed = new URL(url, APP_ORIGIN)
     const hash = parsed.hash || parsed.pathname
     const child = new BrowserWindow({
       width,
@@ -121,13 +136,8 @@ function createWindow() {
       webPreferences: { contextIsolation: true, nodeIntegration: false },
     })
     child.setMenuBarVisibility(false)
-    if (isDev) {
-      child.loadURL(`http://localhost:5173/${hash}`)
-    } else {
-      child.loadFile(path.join(process.resourcesPath, 'frontend', 'index.html'), {
-        hash: hash.replace(/^#/, ''),
-      })
-    }
+    // Recibo / Reimprimir: mismo origen que la ventana principal, con HashRouter.
+    child.loadURL(`${APP_ORIGIN}/#${hash.replace(/^#/, '')}`)
     return { action: 'deny' }
   })
 
