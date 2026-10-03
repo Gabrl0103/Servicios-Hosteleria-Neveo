@@ -58,6 +58,10 @@ export default function IconDefs() {
           <path d="M4 20V4M4 20h16" />
           <path d="M8 16l3-4 3 2 4-6" />
         </symbol>
+        <symbol id="ic-bulb" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M9 18h6M10 21h4" />
+          <path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z" />
+        </symbol>
         <symbol id="ic-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M3 8l9-4 9 4v8l-9 4-9-4z" />
           <path d="M3 8l9 4 9-4M12 12v8" />

@@ -5,6 +5,7 @@ import { getBusinessSettings } from '../api/businessSettings'
 
 const ITEMS = [
   { to: '/reportes', label: 'Reportes', icon: 'ic-chart' },
+  { to: '/analisis', label: 'Análisis', icon: 'ic-bulb' },
   { to: '/mesas', label: 'Mesas', icon: 'ic-cart' },
   { to: '/turno', label: 'Turno', icon: 'ic-clock' },
   { to: '/cuadre-de-caja', label: 'Cuadre de caja', icon: 'ic-list' },
@@ -22,7 +23,7 @@ function formatToday() {
 }
 
 export default function NavBar() {
-  const { cashRegister } = useSession()
+  const { cashRegister, alertCount } = useSession()
   const navigate = useNavigate()
   const [logo, setLogo] = useState(null)
 
@@ -82,6 +83,12 @@ export default function NavBar() {
               <use href={`#${item.icon}`} />
             </svg>
             {item.label}
+            {item.to === '/analisis' && alertCount > 0 && (
+              <span
+                title={`${alertCount} alerta(s)`}
+                style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--red-text)', marginLeft: -2 }}
+              />
+            )}
           </NavLink>
         ))}
       </nav>

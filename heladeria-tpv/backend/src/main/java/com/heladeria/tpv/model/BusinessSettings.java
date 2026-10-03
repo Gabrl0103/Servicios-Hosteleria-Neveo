@@ -1,5 +1,7 @@
 package com.heladeria.tpv.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 @Entity
@@ -30,6 +32,11 @@ public class BusinessSettings {
     private String facebookUrl;
 
     private String whatsappNumber;
+
+    // Hash BCrypt de la contraseña de administrador. Nunca se serializa:
+    // los GET solo exponen adminPasswordSet.
+    @JsonIgnore
+    private String adminPasswordHash;
 
     public BusinessSettings() {
     }
@@ -128,5 +135,18 @@ public class BusinessSettings {
 
     public void setWhatsappNumber(String whatsappNumber) {
         this.whatsappNumber = whatsappNumber;
+    }
+
+    public String getAdminPasswordHash() {
+        return adminPasswordHash;
+    }
+
+    public void setAdminPasswordHash(String adminPasswordHash) {
+        this.adminPasswordHash = adminPasswordHash;
+    }
+
+    @JsonProperty("adminPasswordSet")
+    public boolean isAdminPasswordSet() {
+        return adminPasswordHash != null && !adminPasswordHash.isBlank();
     }
 }

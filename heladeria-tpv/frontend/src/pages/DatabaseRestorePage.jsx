@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { listBackups, restoreFromBackup, restoreFromFile } from '../api/backup'
+import { resetAdminPassword } from '../api/businessSettings'
 
 export default function DatabaseRestorePage() {
   const [backups, setBackups] = useState([])
@@ -11,6 +12,11 @@ export default function DatabaseRestorePage() {
   const [result, setResult] = useState(null)
   const [error, setError] = useState('')
   const fileInputRef = useRef(null)
+
+  const [resetConfirmation, setResetConfirmation] = useState('')
+  const [resetStep, setResetStep] = useState(false)
+  const [resetDone, setResetDone] = useState(false)
+  const [resetError, setResetError] = useState('')
 
   useEffect(() => {
     listBackups()
@@ -33,6 +39,19 @@ export default function DatabaseRestorePage() {
       setError(err.message)
     } finally {
       setRestoring(false)
+    }
+  }
+
+  async function handleResetPassword() {
+    if (resetConfirmation !== 'RESTABLECER') return
+    setResetError('')
+    try {
+      await resetAdminPassword(resetConfirmation)
+      setResetDone(true)
+      setResetStep(false)
+      setResetConfirmation('')
+    } catch (err) {
+      setResetError(err.message)
     }
   }
 
@@ -176,6 +195,63 @@ export default function DatabaseRestorePage() {
         >
           {restoring ? 'Restaurando...' : 'Restaurar base de datos'}
         </button>
+
+        {/* Restablecer contraseña de administrador (doble confirmacion) */}
+        <div style={{ marginTop: 32, paddingTop: 24, borderTop: '1px solid var(--border)' }}>
+          <h2 style={{ fontSize: 17, fontWeight: 900, margin: '0 0 4px', color: 'var(--ink)' }}>
+            Restablecer contraseña de administrador
+          </h2>
+          <p style={{ fontSize: 13, color: 'var(--text-soft)', fontWeight: 700, margin: '0 0 16px' }}>
+            Borra la contraseña olvidada. Después hay que crear una nueva en Configuración para poder anular ventas.
+          </p>
+          {resetDone && (
+            <p style={{ fontSize: 13, fontWeight: 800, color: '#065f46', marginBottom: 12 }}>
+              ✓ Contraseña restablecida. Configura una nueva en Configuración.
+            </p>
+          )}
+          {!resetStep ? (
+            <button
+              type="button"
+              onClick={() => { setResetStep(true); setResetDone(false); setResetError('') }}
+              style={{ background: 'var(--tile-bg)', border: 'none', padding: '10px 16px', borderRadius: 9, fontSize: 13, fontWeight: 800, color: 'var(--ink)', cursor: 'pointer' }}
+            >
+              Restablecer contraseña
+            </button>
+          ) : (
+            <div style={{ padding: '16px 18px', background: '#fef2f2', borderRadius: 12, border: '1px solid #fca5a5' }}>
+              <div style={labelStyle}>Escribe RESTABLECER para confirmar</div>
+              <input
+                value={resetConfirmation}
+                onChange={(e) => setResetConfirmation(e.target.value)}
+                placeholder="RESTABLECER"
+                style={{ width: '100%', padding: '10px 12px', border: '2px solid #fca5a5', borderRadius: 9, fontSize: 14, fontWeight: 800, fontFamily: 'monospace', background: '#fff', boxSizing: 'border-box', marginBottom: 12 }}
+              />
+              {resetError && <p style={{ color: 'var(--red-text)', fontSize: 13, marginBottom: 10 }}>{resetError}</p>}
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button
+                  type="button"
+                  onClick={() => { setResetStep(false); setResetConfirmation('') }}
+                  style={{ flex: 1, padding: '10px', borderRadius: 9, border: '1px solid var(--border)', background: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer' }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleResetPassword}
+                  disabled={resetConfirmation !== 'RESTABLECER'}
+                  style={{
+                    flex: 1, padding: '10px', borderRadius: 9, border: 'none', fontSize: 13, fontWeight: 800,
+                    cursor: resetConfirmation === 'RESTABLECER' ? 'pointer' : 'not-allowed',
+                    background: resetConfirmation === 'RESTABLECER' ? '#dc2626' : 'var(--border)',
+                    color: resetConfirmation === 'RESTABLECER' ? '#fff' : 'var(--text-faint)',
+                  }}
+                >
+                  Confirmar restablecimiento
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

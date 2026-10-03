@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import { getBusinessSettings, updateBusinessSettings } from '../api/businessSettings'
+import { getBusinessSettings, updateBusinessSettings, updateAdminPassword } from '../api/businessSettings'
 import { getCashiers, createCashier, deleteCashier } from '../api/cashiers'
 import { downloadBackup } from '../api/backup'
 
@@ -17,10 +17,22 @@ export default function SettingsPage() {
   const [newCashierName, setNewCashierName] = useState('')
   const [cashierError, setCashierError] = useState('')
 
+  const [adminPasswordSet, setAdminPasswordSet] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordError, setPasswordError] = useState('')
+  const [passwordSaved, setPasswordSaved] = useState(false)
+
   const fileInputRef = useRef(null)
 
   useEffect(() => {
-    getBusinessSettings().then(setSettings).catch(() => {})
+    getBusinessSettings()
+      .then((s) => {
+        setSettings(s)
+        setAdminPasswordSet(!!s.adminPasswordSet)
+      })
+      .catch(() => {})
     getCashiers().then(setCashiers).catch(() => {})
   }, [])
 
@@ -35,6 +47,31 @@ export default function SettingsPage() {
       setTimeout(() => setSaved(false), 2500)
     } catch (err) {
       setSettingsError(err.message)
+    }
+  }
+
+  async function handleSavePassword(e) {
+    e.preventDefault()
+    setPasswordError('')
+    setPasswordSaved(false)
+    if (newPassword.length < 4) {
+      setPasswordError('La contraseña debe tener al menos 4 caracteres')
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError('Las contraseñas no coinciden')
+      return
+    }
+    try {
+      await updateAdminPassword(adminPasswordSet ? currentPassword : null, newPassword)
+      setAdminPasswordSet(true)
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+      setPasswordSaved(true)
+      setTimeout(() => setPasswordSaved(false), 2500)
+    } catch (err) {
+      setPasswordError(err.message)
     }
   }
 
@@ -267,6 +304,44 @@ export default function SettingsPage() {
             />
             <button type="submit" className="btn-ink" style={{ padding: '10px 18px', fontSize: 14, whiteSpace: 'nowrap' }}>
               Agregar cajero
+            </button>
+          </form>
+        </div>
+
+        {/* Contraseña de administrador */}
+        <div className="card" style={{ padding: 26, marginBottom: 20 }}>
+          <div style={{ fontSize: 17, fontWeight: 900, color: 'var(--ink)', marginBottom: 4 }}>Contraseña de administrador</div>
+          <p style={{ fontSize: 13, color: 'var(--text-soft)', fontWeight: 700, margin: '0 0 18px' }}>
+            {adminPasswordSet
+              ? 'Se pide para anular ventas. Para cambiarla escribe la actual.'
+              : 'Aún no está configurada. Es necesaria para anular ventas. Mínimo 4 caracteres (puede ser un PIN).'}
+          </p>
+          <form onSubmit={handleSavePassword}>
+            <div style={{ display: 'grid', gridTemplateColumns: adminPasswordSet ? '1fr 1fr 1fr' : '1fr 1fr', gap: 14, marginBottom: 14 }}>
+              {adminPasswordSet && (
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>
+                    Contraseña actual
+                  </label>
+                  <input type="password" autoComplete="off" style={inputStyle} value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+                </div>
+              )}
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>
+                  Nueva contraseña
+                </label>
+                <input type="password" autoComplete="new-password" style={inputStyle} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>
+                  Repetir nueva contraseña
+                </label>
+                <input type="password" autoComplete="new-password" style={inputStyle} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+              </div>
+            </div>
+            {passwordError && <p style={{ color: 'var(--red-text)', fontSize: 13, marginBottom: 10 }}>{passwordError}</p>}
+            <button type="submit" className="btn-ink" style={{ padding: '12px 22px', fontSize: 14 }}>
+              {passwordSaved ? '✓ Guardada' : adminPasswordSet ? 'Cambiar contraseña' : 'Crear contraseña'}
             </button>
           </form>
         </div>

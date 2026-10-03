@@ -1,6 +1,6 @@
 {
   "name": "heladeria-tpv-desktop",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Aplicacion de escritorio para el TPV de la heladeria",
   "main": "main.js",
   "author": "Heladeria",

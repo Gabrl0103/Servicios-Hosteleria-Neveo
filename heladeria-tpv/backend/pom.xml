@@ -13,7 +13,7 @@
 
     <groupId>com.heladeria</groupId>
     <artifactId>tpv</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <name>heladeria-tpv</name>
     <description>Sistema de punto de venta para heladeria</description>
 
@@ -48,6 +48,13 @@
         <dependency>
             <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-community-dialects</artifactId>
+        </dependency>
+
+        <!-- Solo BCrypt para la contraseña de administrador. NO es Spring Security
+             completo: no activa ningun filtro de autenticacion. -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
         </dependency>
 
         <dependency>

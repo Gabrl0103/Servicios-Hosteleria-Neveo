@@ -1,5 +1,6 @@
 package com.heladeria.tpv.controller;
 
+import com.heladeria.tpv.dto.AnularOrderRequest;
 import com.heladeria.tpv.dto.CreateOrderRequest;
 import com.heladeria.tpv.dto.OrderResponse;
 import com.heladeria.tpv.model.Order;
@@ -32,12 +33,6 @@ public class OrderController {
         return new OrderResponse(orderService.findById(id));
     }
 
-    @PostMapping("/{id}/void")
-    public OrderResponse voidOrder(@PathVariable Long id, @RequestParam Long voidedByUserId) {
-        Order order = orderService.voidOrder(id, voidedByUserId);
-        return new OrderResponse(order);
-    }
-
     @GetMapping
     public Page<OrderResponse> findByDateRange(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
@@ -49,7 +44,7 @@ public class OrderController {
     }
 
     @PostMapping("/{id}/anular")
-    public OrderResponse anularOrder(@PathVariable Long id, @RequestParam String motivo) {
-        return new OrderResponse(orderService.anularOrder(id, motivo));
+    public OrderResponse anularOrder(@PathVariable Long id, @RequestBody AnularOrderRequest request) {
+        return new OrderResponse(orderService.anularOrder(id, request.getMotivo(), request.getPassword()));
     }
 }

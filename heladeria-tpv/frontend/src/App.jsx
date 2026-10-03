@@ -1,5 +1,5 @@
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { SessionProvider } from './context/SessionContext'
+import { SessionProvider, useSession } from './context/SessionContext'
 import NavBar from './components/NavBar'
 import IconDefs from './components/IconDefs'
 import CashRegisterPage from './pages/CashRegisterPage'
@@ -7,6 +7,7 @@ import CashBoxHistoryPage from './pages/CashBoxHistoryPage'
 import TablesPage from './pages/TablesPage'
 import TableDetailPage from './pages/TableDetailPage'
 import ReportsPage from './pages/ReportsPage'
+import AnalyticsPage from './pages/AnalyticsPage'
 import ProductsPage from './pages/ProductsPage'
 import SettingsPage from './pages/SettingsPage'
 import ShiftReceiptPage from './pages/ShiftReceiptPage'
@@ -14,9 +15,20 @@ import OrderReceiptPage from './pages/OrderReceiptPage'
 import DatabaseRestorePage from './pages/DatabaseRestorePage'
 import './styles/global.css'
 
+function RemoteBanner() {
+  const { remote } = useSession()
+  if (!remote) return null
+  return (
+    <div style={{ flex: 'none', padding: '6px 16px', textAlign: 'center', fontSize: 12, fontWeight: 800, background: '#fef3c7', color: '#92400e' }}>
+      Modo remoto (solo lectura)
+    </div>
+  )
+}
+
 function Layout({ children }) {
   return (
     <div style={{ width: '100%', height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <RemoteBanner />
       <NavBar />
       <main style={{ flex: 1, minHeight: 0, position: 'relative' }}>{children}</main>
     </div>
@@ -35,6 +47,7 @@ export default function App() {
           <Route path="/turno" element={<Layout><CashRegisterPage /></Layout>} />
           <Route path="/cuadre-de-caja" element={<Layout><CashBoxHistoryPage /></Layout>} />
           <Route path="/reportes" element={<Layout><ReportsPage /></Layout>} />
+          <Route path="/analisis" element={<Layout><AnalyticsPage /></Layout>} />
           <Route path="/productos" element={<Layout><ProductsPage /></Layout>} />
           <Route path="/configuracion" element={<Layout><SettingsPage /></Layout>} />
           {/* Ruta independiente, sin NavBar, pensada para abrirse en pestana/ventana aparte */}

@@ -29,19 +29,22 @@ public class OrderService {
     private final CashRegisterService cashRegisterService;
     private final RestaurantTableRepository tableRepository;
     private final PendingTableItemRepository pendingTableItemRepository;
+    private final AdminPasswordService adminPasswordService;
 
     public OrderService(OrderRepository orderRepository,
                          ProductRepository productRepository,
                          UserRepository userRepository,
                          CashRegisterService cashRegisterService,
                          RestaurantTableRepository tableRepository,
-                         PendingTableItemRepository pendingTableItemRepository) {
+                         PendingTableItemRepository pendingTableItemRepository,
+                         AdminPasswordService adminPasswordService) {
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
         this.cashRegisterService = cashRegisterService;
         this.tableRepository = tableRepository;
         this.pendingTableItemRepository = pendingTableItemRepository;
+        this.adminPasswordService = adminPasswordService;
     }
 
     @Transactional
@@ -110,25 +113,6 @@ public class OrderService {
         return saved;
     }
 
-    @Transactional
-    public Order voidOrder(Long orderId, Long voidedByUserId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Pedido no encontrado"));
-
-        if (order.getStatus() == OrderStatus.ANULADO) {
-            throw new BusinessRuleException("Este pedido ya estaba anulado");
-        }
-
-        User voidedBy = userRepository.findById(voidedByUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
-
-        order.setStatus(OrderStatus.ANULADO);
-        order.setVoidedBy(voidedBy);
-        order.setVoidedAt(LocalDateTime.now());
-
-        return orderRepository.save(order);
-    }
-
     public List<Order> findByCashRegister(Long cashRegisterId) {
         return orderRepository.findByCashRegisterIdAndStatus(cashRegisterId, OrderStatus.CONFIRMADO);
     }
@@ -145,23 +129,30 @@ public class OrderService {
                 PageRequest.of(page, size));
     }
 
+    /**
+     * Anulacion (soft-delete) protegida por la contraseña de administrador.
+     * Orden de validacion: contraseña configurada (409), contraseña correcta
+     * (403), motivo no vacio, y la orden pertenece al turno abierto.
+     */
     @Transactional
-    public Order anularOrder(Long orderId, String motivo) {
+    public Order anularOrder(Long orderId, String motivo, String password) {
+        adminPasswordService.verifyOrThrow(password);
         if (motivo == null || motivo.isBlank()) {
-            throw new com.heladeria.tpv.exception.BusinessRuleException("El motivo de anulación es obligatorio");
+            throw new BusinessRuleException("El motivo de anulación es obligatorio");
         }
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new com.heladeria.tpv.exception.ResourceNotFoundException("Pedido no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido no encontrado"));
         if (order.getStatus() == OrderStatus.ANULADO) {
-            throw new com.heladeria.tpv.exception.BusinessRuleException("Este pedido ya está anulado");
+            throw new BusinessRuleException("Este pedido ya está anulado");
         }
         CashRegister openRegister = cashRegisterService.getOpenRegisterOrThrow();
         if (!order.getCashRegister().getId().equals(openRegister.getId())) {
-            throw new com.heladeria.tpv.exception.BusinessRuleException("Solo se pueden anular ventas del turno actualmente abierto");
+            throw new BusinessRuleException("Solo se pueden anular ventas del turno actualmente abierto");
         }
         order.setStatus(OrderStatus.ANULADO);
         order.setMotivoAnulacion(motivo.trim());
         order.setVoidedAt(LocalDateTime.now());
+        order.setAnuladaPor(openRegister.getCashierName());
         return orderRepository.save(order);
     }
 }

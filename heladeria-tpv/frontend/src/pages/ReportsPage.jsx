@@ -1,9 +1,12 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, Fragment } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { getReportSummary, getDashboardKpis, getMonthlyBarChart } from '../api/reports'
 import { getOrders, anularOrder } from '../api/orders'
+import { getBusinessSettings } from '../api/businessSettings'
 import { useSession } from '../context/SessionContext'
 import { formatCurrency } from '../utils/format'
 import { categoryInfo } from '../utils/categoryColors'
+import { niceAxisTicks, formatAxisLabel, buildBarGeometry } from '../utils/chartGeometry'
 
 const METHODS = [
   { value: 'EFECTIVO', label: 'Efectivo', color: '#27A567' },
@@ -27,34 +30,6 @@ function getRange(preset) {
     from.setDate(1)
   }
   return { from: toIsoDate(from), to: toIsoDate(today) }
-}
-
-function niceMax(value) {
-  if (value <= 0) return 1
-  const magnitude = Math.pow(10, Math.floor(Math.log10(value)))
-  const normalized = value / magnitude
-  let nice
-  if (normalized <= 1) nice = 1
-  else if (normalized <= 2) nice = 2
-  else if (normalized <= 5) nice = 5
-  else nice = 10
-  return nice * magnitude
-}
-
-function niceAxisTicks(maxValue, count) {
-  if (maxValue <= 0) return [0]
-  const ceiling = niceMax(maxValue)
-  const ticks = []
-  for (let i = 0; i <= count; i++) {
-    ticks.push(Math.round((ceiling / count) * i))
-  }
-  return ticks
-}
-
-function formatAxisLabel(value) {
-  if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`
-  if (value >= 1000) return `$${(value / 1000).toFixed(0)}k`
-  return `$${value}`
 }
 
 function buildChartGeometry(dailySales) {
@@ -92,38 +67,6 @@ function buildChartGeometry(dailySales) {
   return { line, area, points, width, height, padLeft, top, bottom, gridLines }
 }
 
-function buildBarGeometry(points) {
-  const width = 900
-  const height = 220
-  const padLeft = 68
-  const top = 20
-  const bottom = 170
-  const padRight = 20
-
-  const values = points.map((p) => Number(p.total))
-  const rawMax = Math.max(...values, 1)
-  const ticks = niceAxisTicks(rawMax, 4)
-  const max = ticks[ticks.length - 1]
-
-  const barAreaWidth = width - padLeft - padRight
-  const barWidth = barAreaWidth / points.length - 14
-
-  const bars = points.map((p, i) => {
-    const x = padLeft + i * (barAreaWidth / points.length) + 7
-    const barHeight = (Number(p.total) / max) * (bottom - top)
-    const y = bottom - barHeight
-    return { x, y, barHeight, label: p.label, value: p.total }
-  })
-
-  const gridLines = ticks.map((tick) => ({
-    y: bottom - (tick / max) * (bottom - top),
-    label: formatAxisLabel(tick),
-    value: tick,
-  }))
-
-  return { bars, width, height, bottom, barWidth, padLeft, gridLines }
-}
-
 export default function ReportsPage() {
   const [preset, setPreset] = useState('week')
   const [customFrom, setCustomFrom] = useState(toIsoDate(new Date()))
@@ -150,15 +93,31 @@ export default function ReportsPage() {
   // Anular modal state
   const [anularTarget, setAnularTarget] = useState(null)
   const [anularMotivo, setAnularMotivo] = useState('')
+  const [anularPassword, setAnularPassword] = useState('')
+  const [adminPasswordSet, setAdminPasswordSet] = useState(null)
+  const [showPasswordNotice, setShowPasswordNotice] = useState(false)
   const [anularLoading, setAnularLoading] = useState(false)
   const [anularError, setAnularError] = useState('')
 
   const { cashRegister } = useSession()
+  const navigate = useNavigate()
 
   useEffect(() => {
     getDashboardKpis().then(setKpis).catch(() => setKpis(null))
     getMonthlyBarChart().then(setBarChart).catch(() => setBarChart(null))
+    getBusinessSettings().then((s) => setAdminPasswordSet(!!s.adminPasswordSet)).catch(() => {})
   }, [])
+
+  function openAnularModal(order) {
+    if (adminPasswordSet === false) {
+      setShowPasswordNotice(true)
+      return
+    }
+    setAnularTarget(order)
+    setAnularMotivo('')
+    setAnularPassword('')
+    setAnularError('')
+  }
 
   async function loadReport(from, to) {
     setLoading(true)
@@ -215,11 +174,11 @@ export default function ReportsPage() {
   }
 
   async function handleAnular() {
-    if (!anularMotivo.trim() || !anularTarget) return
+    if (!anularMotivo.trim() || !anularPassword || !anularTarget) return
     setAnularLoading(true)
     setAnularError('')
     try {
-      await anularOrder(anularTarget.id, anularMotivo.trim())
+      await anularOrder(anularTarget.id, anularMotivo.trim(), anularPassword)
       // Refresh orders list and report
       ordersCacheKey.current = null
       setOrders(null)
@@ -234,8 +193,10 @@ export default function ReportsPage() {
       ])
       setAnularTarget(null)
       setAnularMotivo('')
+      setAnularPassword('')
     } catch (err) {
       setAnularError(err.message)
+      setAnularPassword('')
     } finally {
       setAnularLoading(false)
     }
@@ -267,6 +228,7 @@ export default function ReportsPage() {
   ]
 
   const chart = report ? buildChartGeometry(report.dailySales) : null
+  const canConfirmAnular = !!anularMotivo.trim() && !!anularPassword && !anularLoading
   const barGeometry = barChart ? buildBarGeometry(barChart) : null
 
   return (
@@ -637,10 +599,10 @@ export default function ReportsPage() {
                           const voided = order.status === 'ANULADO'
                           const canAnular = !voided && cashRegister && order.cashRegisterId === cashRegister.id
                           return (
+                            <Fragment key={order.id}>
                             <tr
-                              key={order.id}
                               style={{
-                                borderBottom: '1px solid var(--border-soft-2)',
+                                borderBottom: voided ? 'none' : '1px solid var(--border-soft-2)',
                                 opacity: voided ? 0.5 : 1,
                               }}
                             >
@@ -677,7 +639,7 @@ export default function ReportsPage() {
                                 {canAnular && (
                                   <button
                                     title="Anular venta"
-                                    onClick={() => { setAnularTarget(order); setAnularMotivo(''); setAnularError('') }}
+                                    onClick={() => openAnularModal(order)}
                                     style={{ ...iconBtnStyle, color: 'var(--red-text)' }}
                                   >
                                     <svg width="14" height="14"><use href="#ic-x" /></svg>
@@ -685,6 +647,21 @@ export default function ReportsPage() {
                                 )}
                               </td>
                             </tr>
+                            {voided && (
+                              <tr style={{ borderBottom: '1px solid var(--border-soft-2)' }}>
+                                <td colSpan={7} style={{ padding: '0 8px 7px', fontSize: 11, color: 'var(--text-soft)', fontWeight: 700 }}>
+                                  Motivo: {order.motivoAnulacion || '—'}
+                                  {order.anuladaEn && (
+                                    <> · Anulada el{' '}
+                                      {new Date(order.anuladaEn).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit' })}{' '}
+                                      {new Date(order.anuladaEn).toLocaleTimeString('es-CO', { hour: 'numeric', minute: '2-digit' })}
+                                    </>
+                                  )}
+                                  {order.anuladaPor && <> · Cajero: {order.anuladaPor}</>}
+                                </td>
+                              </tr>
+                            )}
+                            </Fragment>
                           )
                         })}
                       </tbody>
@@ -739,6 +716,20 @@ export default function ReportsPage() {
               fontSize: 13, fontWeight: 700, color: 'var(--ink)', resize: 'vertical', boxSizing: 'border-box',
             }}
           />
+          <label style={{ display: 'block', fontSize: 12, fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.04em', margin: '14px 0 6px' }}>
+            Contraseña de administrador *
+          </label>
+          <input
+            type="password"
+            value={anularPassword}
+            onChange={(e) => setAnularPassword(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleAnular() }}
+            autoComplete="off"
+            style={{
+              width: '100%', padding: '10px 12px', border: '1px solid var(--border)', borderRadius: 10,
+              fontSize: 13, fontWeight: 700, color: 'var(--ink)', boxSizing: 'border-box',
+            }}
+          />
           {anularError && <p style={{ color: 'var(--red-text)', fontSize: 13, marginTop: 8 }}>{anularError}</p>}
           <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
             <button
@@ -749,15 +740,43 @@ export default function ReportsPage() {
             </button>
             <button
               onClick={handleAnular}
-              disabled={!anularMotivo.trim() || anularLoading}
+              disabled={!canConfirmAnular}
               style={{
                 flex: 1, padding: '11px', borderRadius: 10, border: 'none', fontSize: 14, fontWeight: 800,
-                cursor: anularMotivo.trim() && !anularLoading ? 'pointer' : 'not-allowed',
-                background: anularMotivo.trim() && !anularLoading ? '#dc2626' : 'var(--border)',
-                color: anularMotivo.trim() && !anularLoading ? '#fff' : 'var(--text-faint)',
+                cursor: canConfirmAnular ? 'pointer' : 'not-allowed',
+                background: canConfirmAnular ? '#dc2626' : 'var(--border)',
+                color: canConfirmAnular ? '#fff' : 'var(--text-faint)',
               }}
             >
               {anularLoading ? 'Anulando...' : 'Confirmar anulación'}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Aviso: falta configurar la contraseña de administrador */}
+    {showPasswordNotice && (
+      <div style={{
+        position: 'fixed', inset: 0, background: 'rgba(0,0,0,.45)', display: 'flex',
+        alignItems: 'center', justifyContent: 'center', zIndex: 1000,
+      }}>
+        <div style={{ background: '#fff', borderRadius: 18, padding: '28px 32px', width: 420, boxShadow: '0 8px 32px rgba(0,0,0,.18)' }}>
+          <div style={{ fontSize: 17, fontWeight: 900, color: 'var(--ink)', marginBottom: 8 }}>
+            Falta la contraseña de administrador
+          </div>
+          <p style={{ fontSize: 13, color: 'var(--text-soft)', fontWeight: 700, margin: '0 0 18px' }}>
+            Para anular ventas primero configura la contraseña de administrador en Configuración.
+          </p>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button
+              onClick={() => setShowPasswordNotice(false)}
+              style={{ flex: 1, padding: '11px', borderRadius: 10, border: '1px solid var(--border)', background: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer' }}
+            >
+              Cerrar
+            </button>
+            <button onClick={() => navigate('/configuracion')} className="btn-ink" style={{ flex: 1, padding: '11px', fontSize: 14 }}>
+              Ir a Configuración
             </button>
           </div>
         </div>

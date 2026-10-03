@@ -59,6 +59,11 @@ public class Order {
     @Column(columnDefinition = "TEXT")
     private String motivoAnulacion;
 
+    // Nombre del cajero del turno abierto al momento de anular.
+    // La fecha/hora de anulacion ya se guarda en voidedAt.
+    @Column
+    private String anuladaPor;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items = new ArrayList<>();
 
@@ -175,6 +180,14 @@ public class Order {
 
     public void setMotivoAnulacion(String motivoAnulacion) {
         this.motivoAnulacion = motivoAnulacion;
+    }
+
+    public String getAnuladaPor() {
+        return anuladaPor;
+    }
+
+    public void setAnuladaPor(String anuladaPor) {
+        this.anuladaPor = anuladaPor;
     }
 
     public List<OrderItem> getItems() {

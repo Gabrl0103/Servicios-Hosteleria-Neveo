@@ -24,6 +24,8 @@ public class OrderResponse {
     private BigDecimal changeGiven;
     private OrderStatus status;
     private String motivoAnulacion;
+    private LocalDateTime anuladaEn;
+    private String anuladaPor;
     private Long cashRegisterId;
     private List<ItemResponse> items;
 
@@ -42,6 +44,8 @@ public class OrderResponse {
         this.changeGiven = order.getChangeGiven();
         this.status = order.getStatus();
         this.motivoAnulacion = order.getMotivoAnulacion();
+        this.anuladaEn = order.getVoidedAt();
+        this.anuladaPor = order.getAnuladaPor();
         this.cashRegisterId = order.getCashRegister().getId();
         this.items = order.getItems().stream().map(ItemResponse::new).collect(Collectors.toList());
     }
@@ -92,6 +96,14 @@ public class OrderResponse {
 
     public String getMotivoAnulacion() {
         return motivoAnulacion;
+    }
+
+    public LocalDateTime getAnuladaEn() {
+        return anuladaEn;
+    }
+
+    public String getAnuladaPor() {
+        return anuladaPor;
     }
 
     public Long getCashRegisterId() {
