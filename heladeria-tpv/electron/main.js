@@ -1,12 +1,15 @@
 const { app, BrowserWindow, dialog } = require('electron')
 const path = require('path')
-const { spawn } = require('child_process')
+const { spawn, spawnSync, execFileSync } = require('child_process')
 const http = require('http')
 const fs = require('fs')
 const { pathToFileURL } = require('url')
 
 let backendProcess = null
 let mainWindow = null
+// true solo si esta instancia arranco un backend: evita que una segunda
+// instancia (o un arranque fallido) cierre el backend de otra.
+let startedBackend = false
 
 const isDev = !app.isPackaged
 const BACKEND_PORT = 8080
@@ -29,17 +32,20 @@ function getAppDataDir() {
 }
 
 function getJavaExecutable() {
-  // En produccion se incluye un JRE empaquetado dentro de resources/jre.
-  // En desarrollo se usa el java instalado en el sistema (JAVA_HOME o PATH).
+  // JRE propio generado con jlink (ver README): en produccion en resources/jre,
+  // en desarrollo en electron/jre. Se usa ese java.exe directo; el "java" del
+  // PATH en Windows suele ser el lanzador de Oracle (javapath), que abre otro
+  // proceso hijo y deja el backend huerfano al cerrar la app.
+  const exe = process.platform === 'win32' ? 'java.exe' : 'java'
+  const jreDir = isDev ? path.join(__dirname, 'jre') : path.join(process.resourcesPath, 'jre')
+  const bundledJava = path.join(jreDir, 'bin', exe)
+  if (fs.existsSync(bundledJava)) {
+    return bundledJava
+  }
   if (isDev) {
     return 'java'
   }
-  const bundledJava = path.join(
-    process.resourcesPath,
-    'jre',
-    process.platform === 'win32' ? 'bin/java.exe' : 'bin/java'
-  )
-  return fs.existsSync(bundledJava) ? bundledJava : 'java'
+  throw new Error(`No se encontro el Java incluido en la instalacion: ${bundledJava}`)
 }
 
 function getJarPath() {
@@ -54,6 +60,104 @@ function getFrontendDir() {
   // Java no puede leer dentro de un .asar.
   return path.join(process.resourcesPath, 'frontend')
 }
+
+// ---------------------------------------------------------------------------
+// Procesos y puerto (Windows)
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+// PIDs con un socket TCP IPv4 en escucha en el puerto. No depende del idioma
+// de Windows: en escucha, la direccion remota es siempre 0.0.0.0:0.
+function findListeningPids(port) {
+  if (process.platform !== 'win32') return []
+  let out = ''
+  try {
+    out = execFileSync('netstat', ['-ano', '-p', 'TCP'], { encoding: 'utf8', windowsHide: true })
+  } catch (_) {
+    return []
+  }
+  const pids = new Set()
+  for (const line of out.split(/\r?\n/)) {
+    const cols = line.trim().split(/\s+/)
+    if (cols.length >= 5 && cols[0] === 'TCP' && cols[1].endsWith(`:${port}`) && cols[2] === '0.0.0.0:0') {
+      const pid = Number(cols[4])
+      if (pid > 0) pids.add(pid)
+    }
+  }
+  return [...pids]
+}
+
+function describeProcess(pid) {
+  try {
+    const out = execFileSync(
+      'powershell.exe',
+      [
+        '-NoProfile',
+        '-NonInteractive',
+        '-Command',
+        `$p = Get-CimInstance Win32_Process -Filter "ProcessId=${Number(pid)}"; if ($p) { $p.Name; $p.CommandLine }`,
+      ],
+      { encoding: 'utf8', windowsHide: true, timeout: 15000 }
+    )
+    const [name = '', ...rest] = out.split(/\r?\n/)
+    return { name: name.trim(), commandLine: rest.join(' ').trim() }
+  } catch (_) {
+    return { name: '', commandLine: '' }
+  }
+}
+
+// Backend de esta app (cualquier version): java ejecutando heladeria-tpv.jar.
+function isOurBackend(info) {
+  return /^javaw?\.exe$/i.test(info.name) && info.commandLine.includes('heladeria-tpv.jar')
+}
+
+function killProcessTree(pid) {
+  if (process.platform === 'win32') {
+    spawnSync('taskkill', ['/PID', String(pid), '/T', '/F'], { stdio: 'ignore', windowsHide: true })
+  } else {
+    try {
+      process.kill(pid)
+    } catch (_) {}
+  }
+}
+
+/**
+ * Antes de arrancar: si el puerto esta ocupado por un backend huerfano de
+ * esta app, se cierra; si lo ocupa otro programa, no se conecta en silencio
+ * a el y se muestra un error claro.
+ */
+async function ensurePortFree() {
+  const pids = findListeningPids(BACKEND_PORT)
+  if (pids.length === 0) return
+
+  const foreign = []
+  for (const pid of pids) {
+    const info = describeProcess(pid)
+    if (isOurBackend(info)) {
+      console.log(`Cerrando backend anterior que seguia abierto (PID ${pid})`)
+      killProcessTree(pid)
+    } else {
+      foreign.push(`${info.name || 'programa desconocido'} (PID ${pid})`)
+    }
+  }
+  if (foreign.length > 0) {
+    throw new Error(
+      `El puerto ${BACKEND_PORT} ya esta en uso por otro programa: ${foreign.join(', ')}.\n` +
+        'Cierra ese programa (o reinicia el equipo) y vuelve a abrir la aplicacion.'
+    )
+  }
+
+  for (let i = 0; i < 20 && findListeningPids(BACKEND_PORT).length > 0; i++) {
+    await sleep(250)
+  }
+  if (findListeningPids(BACKEND_PORT).length > 0) {
+    throw new Error(`No se pudo liberar el puerto ${BACKEND_PORT}. Reinicia el equipo y vuelve a intentar.`)
+  }
+}
+
+// ---------------------------------------------------------------------------
 
 function startBackend() {
   return new Promise((resolve, reject) => {
@@ -71,9 +175,21 @@ function startBackend() {
       args.push(`--spring.web.resources.static-locations=${frontendUrl}`)
     }
 
+    let settled = false
+    const done = (fn) => (value) => {
+      if (!settled) {
+        settled = true
+        fn(value)
+      }
+    }
+    resolve = done(resolve)
+    reject = done(reject)
+
     backendProcess = spawn(javaExecutable, args, {
       env: { ...process.env, APP_DATA_DIR: getAppDataDir() },
+      windowsHide: true,
     })
+    startedBackend = true
 
     backendProcess.stdout.on('data', (data) => {
       console.log(`[backend] ${data}`)
@@ -87,26 +203,33 @@ function startBackend() {
       reject(err)
     })
 
-    backendProcess.on('exit', (code) => {
+    const child = backendProcess
+    child.on('exit', (code) => {
       if (code !== 0 && code !== null) {
         console.error(`El backend termino con codigo ${code}`)
       }
+      // Si el backend se cae durante el arranque, no se acepta la respuesta
+      // de otro proceso en el mismo puerto.
+      reject(new Error(`El backend se cerro durante el arranque (codigo ${code})`))
     })
 
-    waitForBackend(resolve, reject)
+    waitForBackend(child, resolve, reject)
   })
 }
 
-function waitForBackend(resolve, reject, attemptsLeft = 60) {
+function waitForBackend(child, resolve, reject, attemptsLeft = 60) {
   if (attemptsLeft <= 0) {
     reject(new Error('El backend no respondio a tiempo'))
     return
   }
 
   http
-    .get(BACKEND_URL, () => resolve())
+    .get(BACKEND_URL, (res) => {
+      res.resume()
+      if (child.exitCode === null) resolve()
+    })
     .on('error', () => {
-      setTimeout(() => waitForBackend(resolve, reject, attemptsLeft - 1), 500)
+      setTimeout(() => waitForBackend(child, resolve, reject, attemptsLeft - 1), 500)
     })
 }
 
@@ -146,29 +269,47 @@ function createWindow() {
   })
 }
 
-app.whenReady().then(async () => {
-  try {
-    await startBackend()
-    createWindow()
-  } catch (err) {
-    dialog.showErrorBox(
-      'No se pudo iniciar la aplicacion',
-      `Ocurrio un problema arrancando el sistema:\n${err.message}`
-    )
-    app.quit()
-  }
-})
+// Una sola instancia: abrir la app de nuevo enfoca la ventana existente
+// en vez de arrancar (y luego cerrar) un segundo backend.
+const gotSingleInstanceLock = app.requestSingleInstanceLock()
+if (!gotSingleInstanceLock) {
+  app.quit()
+} else {
+  app.on('second-instance', () => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore()
+      mainWindow.focus()
+    }
+  })
+
+  app.whenReady().then(async () => {
+    try {
+      await ensurePortFree()
+      await startBackend()
+      createWindow()
+    } catch (err) {
+      dialog.showErrorBox(
+        'No se pudo iniciar la aplicacion',
+        `Ocurrio un problema arrancando el sistema:\n${err.message}`
+      )
+      app.quit()
+    }
+  })
+}
 
 function killBackend() {
-  if (!backendProcess) return
-  const pid = backendProcess.pid
-  backendProcess = null
-  try {
-    process.kill(pid)
-  } catch (_) {}
-  // Ensure the whole process tree is gone on Windows
-  if (process.platform === 'win32') {
-    spawn('taskkill', ['/PID', String(pid), '/T', '/F'], { stdio: 'ignore' })
+  if (!startedBackend) return
+  if (backendProcess) {
+    const pid = backendProcess.pid
+    backendProcess = null
+    // Sincrono y con /T: cierra java.exe y cualquier proceso hijo antes de salir.
+    killProcessTree(pid)
+  }
+  // Respaldo: si un backend de esta app sigue escuchando en el puerto, cerrarlo.
+  for (const pid of findListeningPids(BACKEND_PORT)) {
+    if (isOurBackend(describeProcess(pid))) {
+      killProcessTree(pid)
+    }
   }
 }
 

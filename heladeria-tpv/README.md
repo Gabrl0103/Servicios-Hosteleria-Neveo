@@ -71,7 +71,8 @@ npm run build
 
 Esto genera `frontend/dist/`.
 
-Finalmente, empaqueta todo con Electron:
+Genera el JRE empaquetado (solo la primera vez, ver "JRE empaquetado" abajo)
+y finalmente empaqueta todo con Electron:
 
 ```bash
 cd electron
@@ -82,22 +83,47 @@ npm run dist
 El instalador queda en `electron/dist/`. Ese es el archivo que se lleva a la
 heladeria e instala una sola vez.
 
-### Sobre el JRE empaquetado
+### JRE empaquetado (obligatorio para el instalador)
 
-Para que el instalador no dependa de que el PC de la heladeria tenga Java
-instalado, lo ideal es incluir un JRE portable dentro de `electron/jre/`.
-Si esa carpeta esta vacia, la app intentara usar el Java del sistema — lo
-cual funciona si Java ya esta instalado, pero no es lo mas robusto para
-distribuir a otra persona. Para generar un JRE portable minimo:
+El instalador incluye su propio Java en `electron/jre/` (queda en
+`resources/jre` dentro de la instalacion) y la app usa ese `java.exe`
+directamente. No usa el Java del PC: en Windows el `java` del PATH suele
+ser el lanzador de Oracle (`javapath\java.exe`), que abre otro proceso y
+dejaba el backend abierto al cerrar la app.
+
+`electron/jre/` esta en `.gitignore` (no se sube al repo). Hay que generarlo
+una vez en cada maquina donde se construya el instalador, y de nuevo si
+cambian las dependencias del backend o la version de Java. Usa el JDK 21:
 
 ```bash
-# Desde el JDK que tengas instalado (17+), genera un runtime reducido
-jlink --add-modules java.base,java.desktop,java.logging,java.naming,java.management,java.sql,java.security.jgss,jdk.crypto.ec --output electron/jre --strip-debug --no-header-files --no-man-pages
+# 1. Compilar el backend (genera backend/target/heladeria-tpv.jar)
+cd backend && mvn clean package -DskipTests && cd ..
+
+# 2. (Opcional) Ver que modulos necesita el backend
+mkdir tmp-jdeps && cd tmp-jdeps
+"C:/Program Files/Java/jdk-21/bin/jar" xf ../backend/target/heladeria-tpv.jar
+"C:/Program Files/Java/jdk-21/bin/jdeps" --ignore-missing-deps --print-module-deps \
+  --multi-release 21 --recursive --class-path "BOOT-INF/lib/*" BOOT-INF/classes
+cd .. && rm -rf tmp-jdeps
+
+# 3. Generar el runtime reducido (~50 MB)
+rm -rf electron/jre
+"C:/Program Files/Java/jdk-21/bin/jlink" \
+  --add-modules java.base,java.compiler,java.desktop,java.instrument,java.management,java.net.http,java.prefs,java.rmi,java.scripting,java.security.jgss,java.sql.rowset,jdk.jfr,jdk.unsupported,jdk.localedata,jdk.charsets,jdk.crypto.ec \
+  --include-locales=en,es \
+  --strip-debug --no-header-files --no-man-pages --compress=zip-6 \
+  --output electron/jre
 ```
 
-Si por ahora no quieres hacer esto, no es necesario: mientras pruebes en tu
-propia maquina (que ya tiene Java por Cursor/desarrollo), la app funciona
-igual usando el Java instalado.
+La lista de modulos es la salida de `jdeps` mas tres que `jdeps` no detecta
+porque se cargan en tiempo de ejecucion: `jdk.localedata` (nombres de dias y
+formatos en español), `jdk.charsets` y `jdk.crypto.ec`. Si `jdeps` muestra
+un modulo nuevo, agregalo a `--add-modules`.
+
+Sin `electron/jre`, `npm run dist` genera un instalador que no arranca
+(muestra "No se encontro el Java incluido en la instalacion"). En desarrollo
+(`npm start` en `electron/`) se usa `electron/jre` si existe, si no el Java
+del sistema.
 
 ## Usuarios y roles
 
