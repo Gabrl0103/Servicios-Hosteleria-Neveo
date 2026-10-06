@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSession } from '../context/SessionContext'
 import { openCashRegister, closeCashRegister } from '../api/cashRegisters'
@@ -6,7 +6,7 @@ import { getCashiers } from '../api/cashiers'
 import { getShiftReport, getExpectedCash } from '../api/reports'
 import { getExpenses, createExpense, deleteExpense } from '../api/expenses'
 import { formatCurrency } from '../utils/format'
-import { Button, Card, Notice } from '../components/ui'
+import { Button, Card, Modal, Notice } from '../components/ui'
 import './CashRegisterPage.css'
 
 const METHODS = [
@@ -16,7 +16,7 @@ const METHODS = [
 ]
 
 export default function CashRegisterPage() {
-  const { user, cashRegister, refreshCashRegister } = useSession()
+  const { user, cashRegister, refreshCashRegister, remote } = useSession()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [report, setReport] = useState(null)
@@ -32,6 +32,14 @@ export default function CashRegisterPage() {
   const [expDesc, setExpDesc] = useState('')
   const [expAmount, setExpAmount] = useState('')
   const [expLoading, setExpLoading] = useState(false)
+
+  // Confirmacion al cerrar el turno (Especificacion 13).
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false)
+  const [closeSummary, setCloseSummary] = useState(null)
+  const [summaryError, setSummaryError] = useState('')
+  const [closeError, setCloseError] = useState('')
+  const closingRef = useRef(false)
+  const cancelCloseRef = useRef(null)
 
   function refreshExpenseData() {
     getExpenses(cashRegister.id).then(setExpenses).catch(() => setExpenses([]))
@@ -68,15 +76,38 @@ export default function CashRegisterPage() {
     }
   }
 
+  // "Cerrar turno" ya no cierra: abre la confirmacion con el resumen del
+  // turno, tomado del mismo endpoint que el "Resumen en vivo por metodo".
+  function openCloseConfirm() {
+    setCloseSummary(null)
+    setSummaryError('')
+    setCloseError('')
+    setShowCloseConfirm(true)
+    getShiftReport(cashRegister.id)
+      .then(setCloseSummary)
+      .catch((err) => setSummaryError(`No se pudo cargar el resumen del turno: ${err.message}`))
+  }
+
+  function cancelClose() {
+    if (closingRef.current) return
+    setShowCloseConfirm(false)
+  }
+
+  // Cierre de siempre; solo se ejecuta desde "Confirmar cierre". Si falla, el
+  // error se muestra dentro del modal y el turno sigue abierto.
   async function handleClose() {
+    if (closingRef.current) return
+    closingRef.current = true
     setLoading(true)
-    setError('')
+    setCloseError('')
     try {
       await closeCashRegister(cashRegister.id)
       await refreshCashRegister()
+      setShowCloseConfirm(false)
     } catch (err) {
-      setError(err.message)
+      setCloseError(err.message)
     } finally {
+      closingRef.current = false
       setLoading(false)
     }
   }
@@ -309,10 +340,91 @@ export default function CashRegisterPage() {
               <Button size="lg" className="shift-actions__main" onClick={() => navigate('/mesas')}>
                 Ir a mesas →
               </Button>
-              <Button size="lg" variant="danger-outline" onClick={handleClose} disabled={loading}>
+              <Button
+                size="lg"
+                variant="danger-outline"
+                onClick={openCloseConfirm}
+                disabled={loading || remote}
+                title={remote ? 'No disponible en modo remoto (solo lectura)' : undefined}
+              >
                 {loading ? 'Cerrando...' : 'Cerrar turno'}
               </Button>
             </div>
+
+            {showCloseConfirm && (
+              <Modal
+                title="Cerrar turno"
+                closeButton
+                width={480}
+                onClose={cancelClose}
+                dismissible={!loading}
+                initialFocusRef={cancelCloseRef}
+                footer={(
+                  <>
+                    <Button ref={cancelCloseRef} variant="secondary" onClick={cancelClose} disabled={loading}>
+                      Cancelar
+                    </Button>
+                    <Button
+                      onClick={handleClose}
+                      disabled={loading || (!closeSummary && !summaryError)}
+                      aria-busy={loading}
+                    >
+                      {loading ? 'Cerrando...' : 'Confirmar cierre'}
+                    </Button>
+                  </>
+                )}
+              >
+                <div className="close-shift">
+                  <dl className="close-shift__info">
+                    <div>
+                      <dt>Cajero</dt>
+                      <dd>{cashRegister.cashierName || '—'}</dd>
+                    </div>
+                    <div>
+                      <dt>Apertura</dt>
+                      <dd className="ui-num">
+                        {new Date(cashRegister.openedAt).toLocaleTimeString('es-CO', { hour: 'numeric', minute: '2-digit' })}
+                        {' · '}
+                        {new Date(cashRegister.openedAt).toLocaleDateString('es-CO', { weekday: 'short', day: 'numeric', month: 'short' })}
+                      </dd>
+                    </div>
+                  </dl>
+
+                  {summaryError ? (
+                    <Notice variant="danger">{summaryError}</Notice>
+                  ) : !closeSummary ? (
+                    <p className="close-shift__loading">Cargando resumen del turno...</p>
+                  ) : (
+                    <div className="close-shift__summary">
+                      <div className="close-shift__total">
+                        <div>
+                          <div className="shift-label">Total vendido</div>
+                          <div className="close-shift__total-amount">{formatCurrency(closeSummary.totalAmount)}</div>
+                        </div>
+                        <div className="close-shift__count">
+                          {closeSummary.totalOrders} {closeSummary.totalOrders === 1 ? 'venta' : 'ventas'}
+                        </div>
+                      </div>
+                      <div className="close-shift__methods">
+                        {METHODS.map((m) => (
+                          <div key={m.value} className="close-shift__method">
+                            <span className="method-tile__dot" style={{ background: m.color }} />
+                            <span className="close-shift__method-name">{m.label}</span>
+                            <span className="close-shift__method-count">
+                              {closeSummary.breakdown[m.value]?.orderCount || 0} {closeSummary.breakdown[m.value]?.orderCount === 1 ? 'venta' : 'ventas'}
+                            </span>
+                            <span className="close-shift__method-total">{formatCurrency(closeSummary.breakdown[m.value]?.total || 0)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <Notice variant="warning">Al cerrar el turno ya no podrás anular las ventas de este turno.</Notice>
+                  {closeError && <Notice variant="danger">{closeError}</Notice>}
+                </div>
+              </Modal>
+            )}
           </>
         )}
       </div>

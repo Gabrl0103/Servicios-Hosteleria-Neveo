@@ -429,3 +429,110 @@
 .shift-actions .ui-btn--danger-outline {
   padding: 0 var(--space-10);
 }
+
+/* Confirmacion de cierre (Especificacion 13) */
+.close-shift {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+}
+
+.close-shift__info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+  margin: 0;
+}
+
+.close-shift__info dt {
+  font-size: var(--font-size-small);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.close-shift__info dd {
+  margin: 2px 0 0;
+  font-size: var(--font-size-body-lg);
+  font-weight: 700;
+}
+
+.close-shift__loading {
+  margin: 0;
+  font-size: var(--font-size-body);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.close-shift__summary {
+  border-radius: var(--radius-button);
+  background: var(--color-surface-sunken);
+  overflow: hidden;
+}
+
+.close-shift__total {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding: var(--space-7);
+  background: var(--color-primary-dark);
+  color: var(--color-on-primary);
+}
+
+.close-shift__total .shift-label {
+  color: var(--color-on-dark-muted);
+}
+
+.close-shift__total-amount {
+  margin-top: 2px;
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+
+.close-shift__count {
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-on-dark-muted);
+}
+
+.close-shift__methods {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-2) var(--space-7);
+}
+
+.close-shift__method {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) 0;
+  font-size: var(--font-size-body);
+}
+
+.close-shift__method + .close-shift__method {
+  border-top: 1px solid var(--color-border);
+}
+
+.close-shift__method-name {
+  flex: 1;
+  font-weight: 700;
+}
+
+.close-shift__method-count {
+  font-size: var(--font-size-small);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+}
+
+.close-shift__method-total {
+  min-width: 96px;
+  text-align: right;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
