@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { getTables, createTable, renameTable, deleteTable, updateTablePosition } from '../api/tables'
 import { formatCurrency } from '../utils/format'
 import { useSession } from '../context/SessionContext'
+import { Button, Card, Chip, Input, Modal, Notice } from '../components/ui'
+import './TablesPage.css'
 
 const CARD_W = 180
 const CARD_H = 120
@@ -24,6 +26,8 @@ export default function TablesPage() {
   const containerRef = useRef(null)
   const dragRef = useRef(null)
   const wasDragRef = useRef(false)
+  const newNameRef = useRef(null)
+  const editNameRef = useRef(null)
 
   function load() {
     getTables().then((loaded) => {
@@ -164,140 +168,153 @@ export default function TablesPage() {
   if (!cashRegister) return null
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', padding: 32 }}>
-      <div style={{ maxWidth: 1000, margin: '0 auto' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 22 }}>
-          <div>
-            <h1 style={{ fontSize: 25, fontWeight: 900, margin: '0 0 4px' }}>Mesas</h1>
-            <p style={{ fontSize: 14, color: 'var(--text-soft)', fontWeight: 700, margin: 0 }}>
-              Arrastra las mesas para organizarlas. Toca una para ver sus productos.
-            </p>
-          </div>
-          <button onClick={() => setCreating(true)} className="btn-ink" style={{ padding: '13px 20px', fontSize: 15, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-            <svg width="18" height="18"><use href="#ic-plus" /></svg>
-            Nueva mesa
-          </button>
+    <div className="tables-page">
+      <div className="tables-page__header">
+        <h1 className="ui-page-title">Mesas</h1>
+        <div className="tables-page__legend">
+          <span className="tables-page__legend-item">
+            <span className="tables-page__legend-dot" style={{ background: 'var(--color-success)' }} />
+            Disponible
+          </span>
+          <span className="tables-page__legend-item">
+            <span className="tables-page__legend-dot" style={{ background: 'var(--color-primary)' }} />
+            Ocupada
+          </span>
         </div>
 
-        {notice && (
-          <p style={{ display: 'inline-block', background: 'var(--green-bg)', border: '1px solid var(--green-border)', color: 'var(--green-text)', fontSize: 14, fontWeight: 800, padding: '8px 14px', borderRadius: 10, margin: '0 0 12px' }}>
-            ✓ {notice}
-          </p>
-        )}
-        {error && <p style={{ color: 'var(--red-text)' }}>{error}</p>}
+        <div className="tables-page__actions">
+          <span className="tables-page__hint">Arrastra las mesas para organizarlas. Toca una para ver sus productos.</span>
+          {notice && (
+            <Notice variant="success" icon={<CheckIcon />} className="tables-page__notice">
+              {notice}
+            </Notice>
+          )}
+          <Button size="sm" onClick={() => setCreating(true)}>
+            <svg width="18" height="18"><use href="#ic-plus" /></svg>
+            Nueva mesa
+          </Button>
+        </div>
+      </div>
 
-        <div
-          ref={containerRef}
-          style={{ position: 'relative', width: '100%', minHeight: 600, userSelect: 'none' }}
-        >
+      {error && <Notice variant="danger">{error}</Notice>}
+
+      <div className="tables-plan">
+        <div ref={containerRef} className="tables-plan__area">
           {tables.map((table) => {
             const occupied = Number(table.pendingTotal) > 0
             return (
-              <div
+              <Card
                 key={table.id}
                 data-table-id={table.id}
-                className="card"
+                className={`table-card ${occupied ? 'table-card--busy' : 'table-card--free'}`}
                 style={{
-                  position: 'absolute',
                   left: table.positionX ?? 0,
                   top: table.positionY ?? 0,
                   width: CARD_W,
-                  padding: 18,
-                  border: occupied ? '2px solid var(--accent)' : '1px solid var(--border)',
-                  cursor: 'grab',
+                  height: CARD_H,
                 }}
                 onMouseDown={(e) => handleMouseDown(e, table)}
                 onClick={(e) => handleCardClick(e, table)}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: occupied ? 'var(--accent)' : 'var(--text-faint)' }} />
-                  <span style={{ fontSize: 12, fontWeight: 800, color: occupied ? 'var(--accent)' : 'var(--text-soft)' }}>
-                    {occupied ? 'OCUPADA' : 'DISPONIBLE'}
-                  </span>
-                </div>
-                <div style={{ fontSize: 17, fontWeight: 900, color: 'var(--ink)' }}>{table.name}</div>
-                <div className="mono" style={{ fontSize: occupied ? 19 : 13, fontWeight: 700, color: occupied ? 'var(--accent)' : 'var(--text-faint)', marginTop: 8 }}>
-                  {formatCurrency(table.pendingTotal)}
+                <div className="table-card__top">
+                  <span className="table-card__name" title={table.name}>{table.name}</span>
+                  <svg className="table-card__handle" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M9 6h.01 M15 6h.01 M9 12h.01 M15 12h.01 M9 18h.01 M15 18h.01" />
+                  </svg>
                 </div>
 
-                <div style={{ position: 'absolute', top: 14, right: 14, display: 'flex', gap: 6 }} onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
-                  <button
-                    onClick={() => setEditing({ id: table.id, name: table.name })}
-                    aria-label="Editar"
-                    style={{ width: 22, height: 22, borderRadius: 7, background: 'var(--tile-bg)', display: 'grid', placeItems: 'center', border: 'none' }}
-                  >
-                    <svg width="12" height="12"><use href="#ic-edit" /></svg>
-                  </button>
-                  <button
-                    onClick={() => handleDelete(table)}
-                    aria-label="Eliminar"
-                    style={{ width: 22, height: 22, borderRadius: 7, background: 'var(--tile-bg)', display: 'grid', placeItems: 'center', border: 'none' }}
-                  >
-                    <svg width="11" height="11"><use href="#ic-x" /></svg>
-                  </button>
+                <div className="table-card__bottom">
+                  <div className="table-card__status">
+                    <Chip variant={occupied ? 'primary' : 'success'}>{occupied ? 'Ocupada' : 'Disponible'}</Chip>
+                    <div className="table-card__tools" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        className="table-card__tool"
+                        onClick={() => setEditing({ id: table.id, name: table.name })}
+                        aria-label="Editar"
+                        title="Renombrar"
+                      >
+                        <svg width="13" height="13"><use href="#ic-edit" /></svg>
+                      </button>
+                      <button
+                        type="button"
+                        className="table-card__tool"
+                        onClick={() => handleDelete(table)}
+                        aria-label="Eliminar"
+                        title="Eliminar"
+                      >
+                        <svg width="12" height="12"><use href="#ic-x" /></svg>
+                      </button>
+                    </div>
+                  </div>
+                  {occupied
+                    ? <span className="table-card__amount">{formatCurrency(table.pendingTotal)}</span>
+                    : <span className="table-card__empty">Sin pendiente</span>}
                 </div>
-              </div>
+              </Card>
             )
           })}
-        </div>
 
-        {tables.length === 0 && !error && (
-          <p style={{ color: 'var(--text-soft)', fontSize: 14, marginTop: 20 }}>
-            Aún no hay mesas creadas. Crea la primera con "Nueva mesa".
-          </p>
-        )}
+          {tables.length === 0 && !error && (
+            <p className="tables-plan__empty">Aún no hay mesas creadas. Crea la primera con "Nueva mesa".</p>
+          )}
+        </div>
       </div>
 
       {creating && (
-        <div
-          onClick={() => setCreating(false)}
-          style={{ position: 'absolute', inset: 0, background: 'rgba(42,38,34,.42)', backdropFilter: 'blur(2px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 40 }}
+        <Modal
+          title="Nueva mesa"
+          width={360}
+          onClose={() => setCreating(false)}
+          initialFocusRef={newNameRef}
+          footer={(
+            <>
+              <Button variant="neutral" onClick={() => setCreating(false)}>Cancelar</Button>
+              <Button type="submit" form="new-table-form">Crear</Button>
+            </>
+          )}
         >
-          <form onClick={(e) => e.stopPropagation()} onSubmit={handleCreate} style={{ background: '#fff', width: 340, borderRadius: 20, boxShadow: 'var(--shadow-modal)', padding: 24 }}>
-            <h3 style={{ marginTop: 0, fontWeight: 900 }}>Nueva mesa</h3>
-            <input
-              autoFocus
+          <form id="new-table-form" onSubmit={handleCreate}>
+            <Input
+              ref={newNameRef}
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder="Ej: Cliente 1, Pipe, Manu..."
-              style={{ width: '100%', border: '1px solid var(--border)', borderRadius: 10, padding: '10px 12px', fontSize: 15, marginBottom: 16 }}
             />
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button type="button" onClick={() => setCreating(false)} className="btn-outline" style={{ flex: 1, padding: 12 }}>
-                Cancelar
-              </button>
-              <button type="submit" className="btn-ink" style={{ flex: 1, padding: 12 }}>
-                Crear
-              </button>
-            </div>
           </form>
-        </div>
+        </Modal>
       )}
 
       {editing && (
-        <div
-          onClick={() => setEditing(null)}
-          style={{ position: 'absolute', inset: 0, background: 'rgba(42,38,34,.42)', backdropFilter: 'blur(2px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 40 }}
+        <Modal
+          title="Renombrar mesa"
+          width={360}
+          onClose={() => setEditing(null)}
+          initialFocusRef={editNameRef}
+          footer={(
+            <>
+              <Button variant="neutral" onClick={() => setEditing(null)}>Cancelar</Button>
+              <Button type="submit" form="rename-table-form">Guardar</Button>
+            </>
+          )}
         >
-          <form onClick={(e) => e.stopPropagation()} onSubmit={handleRename} style={{ background: '#fff', width: 340, borderRadius: 20, boxShadow: 'var(--shadow-modal)', padding: 24 }}>
-            <h3 style={{ marginTop: 0, fontWeight: 900 }}>Renombrar mesa</h3>
-            <input
-              autoFocus
+          <form id="rename-table-form" onSubmit={handleRename}>
+            <Input
+              ref={editNameRef}
               value={editing.name}
               onChange={(e) => setEditing({ ...editing, name: e.target.value })}
-              style={{ width: '100%', border: '1px solid var(--border)', borderRadius: 10, padding: '10px 12px', fontSize: 15, marginBottom: 16 }}
             />
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button type="button" onClick={() => setEditing(null)} className="btn-outline" style={{ flex: 1, padding: 12 }}>
-                Cancelar
-              </button>
-              <button type="submit" className="btn-ink" style={{ flex: 1, padding: 12 }}>
-                Guardar
-              </button>
-            </div>
           </form>
-        </div>
+        </Modal>
       )}
     </div>
+  )
+}
+
+function CheckIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M5 12.5l4.5 4.5L19 7.5" />
+    </svg>
   )
 }

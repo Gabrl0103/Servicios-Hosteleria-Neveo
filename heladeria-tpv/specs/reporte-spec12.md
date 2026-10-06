@@ -51,3 +51,23 @@ Los dos `.dc.html` no se abren solos: dependen de `support.js` (no incluido), de
 - Probado con el backend sirviendo `frontend/dist` (como el instalador) y una base de datos de prueba aparte. A 1366×768 no hay scroll horizontal ni elementos cortados.
 - Capturas: `capturas-spec12/navbar-1366x768.png` (turno abierto) y `capturas-spec12/navbar-sin-turno-1366x768.png`. El resto de la pantalla sigue con el estilo anterior hasta migrarla.
 - Observación (no se tocó): al abrir `#/mesas` en frío, `TablesPage` redirige a `/turno` antes de que cargue el turno, porque `cashRegister` empieza en `null`. Es comportamiento previo.
+
+## Paso 4: Mesas (Parte 2, punto 2)
+
+- `pages/TablesPage.jsx` + `TablesPage.css`, según `design/A-Mesas.dc.html`: título "Mesas" en Fraunces 38, leyenda Disponible/Ocupada, texto de ayuda, aviso "Cuenta guardada: $ X" y botón "Nueva mesa" en la misma fila; plano blanco con fondo de puntos que ocupa el resto de la pantalla; mesas ocupadas con tinte violeta, chip "Ocupada" y monto, y disponibles en blanco con chip "Disponible" y "Sin pendiente"; ícono de arrastre.
+- Estilos duplicados reemplazados por los componentes base: `Card` (mesa), `Chip` (estado), `Notice` (aviso de cuenta guardada y errores), `Button` ("Nueva mesa", "Cancelar", "Crear", "Guardar") y `Modal` + `Input` (Nueva mesa / Renombrar mesa). Se quitaron las clases antiguas `.card`, `.btn-ink`, `.btn-outline` de esta pantalla.
+- Sin cambios de lógica: carga, posiciones automáticas, arrastre y guardado de posición, clic para abrir la mesa, crear, renombrar, eliminar (con su `window.confirm`) y el aviso que se oculta a los 3,5 s quedan igual. Las tarjetas mantienen 180×120 (las constantes que usa el arrastre); el diseño dibuja 176×116.
+- Decisiones de diseño a revisar:
+  - Los botones de renombrar y eliminar, que el diseño no dibuja, quedan a la derecha del chip, discretos, siempre visibles.
+  - El plano usa todo el ancho (antes 1000 px máximo) y desplazamiento interno si hay mesas fuera de la vista; la zona de arrastre es el área visible del plano.
+  - En las disponibles el monto "$ 0" pasa a "Sin pendiente", como en el diseño.
+  - Único cambio de comportamiento: el modal de Nueva mesa / Renombrar ahora también se cierra con Escape (lo hace el `Modal` base). Clic fuera y Cancelar siguen igual.
+- `App.jsx`: los CSS base se importan antes que los componentes, para que el CSS de cada pantalla pueda refinar los componentes base (sin esto `.ui-card` pisaba el tinte de las mesas ocupadas).
+- Verificado con Playwright sobre el build servido por el backend y una copia de prueba de la base:
+  - 1366×768, 1600×900 y 1920×1080: sin scroll horizontal; ningún nombre, chip o monto cortado; con el aviso visible la fila de título no se desborda.
+  - Flujo: abrir "Cliente 1", "Dejar en la cuenta", vuelve a Mesas con "Cuenta guardada: $ 43.000".
+  - Arrastre de una mesa: se mueve, guarda la posición en el backend y no abre la mesa.
+  - Modal Nueva mesa: foco en el campo; Escape lo cierra.
+  - Sin errores de JavaScript ni peticiones fallidas.
+- Punto de alerta de Análisis: con `scripts/seed-insights-test.py --today low` sobre una copia de la base de prueba (en la carpeta temporal, no en AppData) `/api/insights` devuelve 2 alertas (`LOW_SALES_TODAY`, `PRODUCT_DROP`) y el punto ámbar se ve junto a "Análisis" (8×8, `#E8A33D`, título "2 alerta(s)").
+- Capturas: `capturas-spec12/mesas-1366x768.png`, `capturas-spec12/mesas-cuenta-guardada-1366x768.png` y `capturas-spec12/navbar-alerta-analisis.png`.

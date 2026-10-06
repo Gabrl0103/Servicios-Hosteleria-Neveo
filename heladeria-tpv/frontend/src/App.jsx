@@ -1,3 +1,8 @@
+// Estilos base primero, para que el CSS de cada pantalla pueda refinarlos.
+import './styles/fonts.css'
+import './styles/tokens.css'
+import './styles/global.css'
+import './styles/ui.css'
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { SessionProvider, useSession } from './context/SessionContext'
 import NavBar from './components/NavBar'
@@ -13,10 +18,6 @@ import SettingsPage from './pages/SettingsPage'
 import ShiftReceiptPage from './pages/ShiftReceiptPage'
 import OrderReceiptPage from './pages/OrderReceiptPage'
 import DatabaseRestorePage from './pages/DatabaseRestorePage'
-import './styles/fonts.css'
-import './styles/tokens.css'
-import './styles/global.css'
-import './styles/ui.css'
 
 function RemoteBanner() {
   const { remote } = useSession()
