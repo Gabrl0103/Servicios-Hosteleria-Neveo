@@ -1,0 +1,44 @@
+/* Ventana del recibo (venta y turno): solo el entorno en pantalla, en el
+   azul del logo para que el papel blanco se distinga. El papel del recibo
+   (.receipt-mono) no se toca. Mismo relleno que antes, asi la hoja impresa
+   queda igual. */
+
+.receipt-window {
+  min-height: 100vh;
+  padding: 34px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(180deg, var(--color-brand-blue-tint) 0%, var(--color-brand-blue-tint-2) 100%);
+}
+
+.receipt-window__actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.receipt-window__print {
+  background: var(--color-brand-blue);
+}
+
+.receipt-window__print:hover:not(:disabled) {
+  background: var(--color-brand-blue-hover);
+}
+
+.receipt-window__message {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-body);
+  font-weight: 500;
+  color: var(--color-brand-blue);
+}
+
+.receipt-window__message--error {
+  color: var(--color-danger);
+}
+
+@media print {
+  .receipt-window {
+    background: none !important;
+  }
+}

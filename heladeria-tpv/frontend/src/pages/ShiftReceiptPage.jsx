@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { getShiftReceipt } from '../api/reports'
 import { formatCurrency } from '../utils/format'
+import { Button } from '../components/ui'
+import '../styles/receipt-window.css'
 import '../styles/global.css'
 
 const METHODS = [
@@ -41,18 +43,19 @@ export default function ShiftReceiptPage() {
   }, [cashRegisterId])
 
   return (
-    <div style={{ minHeight: '100vh', background: '#e7e0d3', padding: '34px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <div className="no-print" style={{ display: 'flex', gap: 10, marginBottom: 18 }}>
-        <button onClick={() => window.close()} style={{ background: '#fff', border: '1px solid var(--border-strong)', color: '#5c554c', fontSize: 13, fontWeight: 800, padding: '9px 16px', borderRadius: 10 }}>
+    <div className="receipt-window">
+      <div className="no-print receipt-window__actions">
+        <Button variant="neutral" size="sm" onClick={() => window.close()}>
           Cerrar ventana
-        </button>
-        <button onClick={() => window.print()} disabled={!receipt} className="btn-ink" style={{ fontSize: 13, padding: '9px 16px' }}>
+        </Button>
+        <Button size="sm" className="receipt-window__print" onClick={() => window.print()} disabled={!receipt}>
+          <svg width="16" height="16" aria-hidden="true"><use href="#ic-print" /></svg>
           Imprimir
-        </button>
+        </Button>
       </div>
 
-      {error && <p style={{ color: 'var(--red-text)' }}>{error}</p>}
-      {!receipt && !error && <p style={{ color: '#8a8175' }}>Cargando comprobante...</p>}
+      {error && <p className="receipt-window__message receipt-window__message--error">{error}</p>}
+      {!receipt && !error && <p className="receipt-window__message">Cargando comprobante...</p>}
 
       {receipt && (
         <div

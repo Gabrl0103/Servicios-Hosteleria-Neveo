@@ -420,7 +420,6 @@ export default function CashRegisterPage() {
                     </div>
                   )}
 
-                  <Notice variant="warning">Al cerrar el turno ya no podrás anular las ventas de este turno.</Notice>
                   {closeError && <Notice variant="danger">{closeError}</Notice>}
                 </div>
               </Modal>

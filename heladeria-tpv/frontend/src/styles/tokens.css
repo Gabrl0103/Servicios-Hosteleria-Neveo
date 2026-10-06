@@ -30,6 +30,12 @@
   --color-on-primary: #FFFFFF;
   --color-on-dark-muted: #DCD3EE;
 
+  /* Azul del logo de Neveo (design/neveo-logo.png) */
+  --color-brand-blue: #566792;
+  --color-brand-blue-hover: #47577F;  /* derivado */
+  --color-brand-blue-tint: #DCE2EE;   /* derivado */
+  --color-brand-blue-tint-2: #C9D2E4; /* derivado */
+
   /* Estados */
   --color-success: #1F9D6B;
   --color-success-bg: #E7F6EE;

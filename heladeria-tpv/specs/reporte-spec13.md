@@ -51,3 +51,7 @@ Capturas en `specs/capturas-spec12/`:
 - `turno-cerrar-sin-ventas-1366x768.png`
 - `turno-remoto-1366x768.png`
 - `turno-abrir-1366x768.png`
+
+## Ajuste posterior (decisión de Gabs)
+
+- Se quitó del modal el aviso "Al cerrar el turno ya no podrás anular las ventas de este turno." (punto 2 del spec), para que el modal no se vea tan cargado. El resto del modal y del flujo no cambia: cajero, apertura, resumen, botones, foco en "Cancelar" y bloqueo durante el cierre.

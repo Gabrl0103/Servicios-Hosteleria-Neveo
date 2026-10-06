@@ -255,3 +255,13 @@ Decisión de Gabs: para las categorías conocidas se usan los colores del diseñ
   - Con una falla simulada se muestra el error; con éxito aparece la pantalla "Restauración completada", con el respaldo previo y el aviso de reiniciar.
   - Restablecer: "Confirmar" deshabilitado hasta escribir "RESTABLECER"; después muestra el aviso verde.
   - Sin scroll horizontal a 1366, 1600 y 1920. Sin errores de JavaScript. `npm run build` limpio; lint sin problemas nuevos.
+
+## Paso 13: Ajustes pedidos por Gabs
+
+- **Cierre de turno:** se quitó el aviso de anulación del modal (ver `reporte-spec13.md`).
+- **Ventana del recibo (venta y turno):** el entorno en pantalla pasa al azul del logo de Neveo. Tokens nuevos `--color-brand-blue` `#566792` y tintes derivados.
+  - El fondo es un degradado azul suave, para que el papel blanco se distinga. "Imprimir" usa el azul del logo, con ícono; "Cerrar ventana" queda en el botón neutro.
+  - Estilos en `styles/receipt-window.css`. En los recibos solo se cambió el contenedor y la barra de botones (que no se imprime). El papel (`.receipt-mono`) no se tocó y el relleno del contenedor es el mismo.
+  - Al imprimir, el fondo se fuerza a transparente.
+  - Verificado midiendo los recibos de venta y turno antes y después, en pantalla y en modo impresión: 0 diferencias internas del papel (102 elementos). En impresión, la posición del papel es igual (60,34); en pantalla baja 3 px por los botones nuevos.
+- `npm run build` limpio; lint sin problemas nuevos.
