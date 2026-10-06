@@ -264,7 +264,7 @@ export default function ReportsPage() {
                 {barGeometry.gridLines.map((gl, i) => (
                   <g key={i}>
                     <line x1={barGeometry.padLeft} y1={gl.y} x2={barGeometry.width - 20} y2={gl.y} stroke="var(--border-soft)" strokeWidth="1" />
-                    <text x={barGeometry.padLeft - 8} y={gl.y + 4} textAnchor="end" fontFamily="Space Mono, monospace" fontSize="11" fill="#a89e8c" fontWeight="700">
+                    <text x={barGeometry.padLeft - 8} y={gl.y + 4} textAnchor="end" fontFamily="DM Sans, system-ui, sans-serif" fontSize="11" fill="#a89e8c" fontWeight="700">
                       {gl.label}
                     </text>
                   </g>
@@ -275,7 +275,7 @@ export default function ReportsPage() {
                     {barHover === i && (
                       <rect x={b.x - 2} y={b.y - 2} width={barGeometry.barWidth + 4} height={b.barHeight + 4} rx="6" fill="none" stroke="#DA2C5E" strokeWidth="2" strokeOpacity="0.4" />
                     )}
-                    <text x={b.x + barGeometry.barWidth / 2} y={barGeometry.bottom + 22} textAnchor="middle" fontFamily="Space Mono, monospace" fontSize="13" fill="#a89e8c" fontWeight="700">
+                    <text x={b.x + barGeometry.barWidth / 2} y={barGeometry.bottom + 22} textAnchor="middle" fontFamily="DM Sans, system-ui, sans-serif" fontSize="13" fill="#a89e8c" fontWeight="700">
                       {b.label}
                     </text>
                   </g>
@@ -447,7 +447,7 @@ export default function ReportsPage() {
                     {chart.gridLines.map((gl, i) => (
                       <g key={i}>
                         <line x1={chart.padLeft} y1={gl.y} x2={chart.width - 8} y2={gl.y} stroke={gl.value === 0 ? 'var(--border-strong-2)' : 'var(--border-soft)'} strokeWidth="1" />
-                        <text x={chart.padLeft - 8} y={gl.y + 4} textAnchor="end" fontFamily="Space Mono, monospace" fontSize="11" fill="#a89e8c" fontWeight="700">
+                        <text x={chart.padLeft - 8} y={gl.y + 4} textAnchor="end" fontFamily="DM Sans, system-ui, sans-serif" fontSize="11" fill="#a89e8c" fontWeight="700">
                           {gl.label}
                         </text>
                       </g>
@@ -457,7 +457,7 @@ export default function ReportsPage() {
                     {chart.points.map((p, i) => (
                       <g key={i} onMouseEnter={() => setLineHover(i)} onMouseLeave={() => setLineHover(null)} style={{ cursor: 'pointer' }}>
                         <circle cx={p.x} cy={p.y} r={lineHover === i ? 8 : 5} fill={lineHover === i ? '#DA2C5E' : '#fff'} stroke="#DA2C5E" strokeWidth="3" />
-                        <text x={p.x} y={chart.bottom + 25} textAnchor="middle" fontFamily="Space Mono, monospace" fontSize="13" fill="#a89e8c" fontWeight="700">
+                        <text x={p.x} y={chart.bottom + 25} textAnchor="middle" fontFamily="DM Sans, system-ui, sans-serif" fontSize="13" fill="#a89e8c" fontWeight="700">
                           {p.label}
                         </text>
                       </g>

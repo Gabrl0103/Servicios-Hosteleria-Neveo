@@ -117,7 +117,7 @@ export default function AnalyticsPage() {
                     {geometry.gridLines.map((gl, i) => (
                       <g key={i}>
                         <line x1={geometry.padLeft} y1={gl.y} x2={geometry.width - 20} y2={gl.y} stroke="var(--border-soft)" strokeWidth="1" />
-                        <text x={geometry.padLeft - 8} y={gl.y + 4} textAnchor="end" fontFamily="Space Mono, monospace" fontSize="11" fill="#a89e8c" fontWeight="700">
+                        <text x={geometry.padLeft - 8} y={gl.y + 4} textAnchor="end" fontFamily="DM Sans, system-ui, sans-serif" fontSize="11" fill="#a89e8c" fontWeight="700">
                           {gl.label}
                         </text>
                       </g>
@@ -133,7 +133,7 @@ export default function AnalyticsPage() {
                           fill={hours[i].peak ? '#DA2C5E' : '#c9bfb0'}
                           fillOpacity={hover === i ? 1 : 0.85}
                         />
-                        <text x={b.x + geometry.barWidth / 2} y={geometry.bottom + 22} textAnchor="middle" fontFamily="Space Mono, monospace" fontSize="12" fill="#a89e8c" fontWeight="700">
+                        <text x={b.x + geometry.barWidth / 2} y={geometry.bottom + 22} textAnchor="middle" fontFamily="DM Sans, system-ui, sans-serif" fontSize="12" fill="#a89e8c" fontWeight="700">
                           {b.label}
                         </text>
                       </g>

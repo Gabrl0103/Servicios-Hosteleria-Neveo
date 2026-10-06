@@ -54,7 +54,7 @@ export default function OrderReceiptPage() {
 
       {order && (
         <div
-          className="mono"
+          className="receipt-mono"
           style={{
             width: 300,
             background: '#fafafa',

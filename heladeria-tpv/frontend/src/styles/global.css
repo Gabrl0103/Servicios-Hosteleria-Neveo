@@ -64,7 +64,15 @@ body {
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb { background: #ddd3c4; border-radius: 6px; border: 2px solid transparent; background-clip: padding-box; }
 
+/* Cifras en pantallas aun no migradas: DM Sans tabular (Space Mono queda
+   solo para los recibos). */
 .mono {
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Recibos impresos (venta y turno). No usar en otras pantallas. */
+.receipt-mono {
   font-family: 'Space Mono', monospace;
 }
 
