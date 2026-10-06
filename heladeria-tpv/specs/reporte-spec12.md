@@ -274,3 +274,22 @@ Decisión de Gabs: para las categorías conocidas se usan los colores del diseñ
   - "Hoy" muestra "lun", el tooltip dice "5 de oct de 2026" y "Mejor día" dice "lunes, 5 de oct".
   - "Esta semana" muestra "dom, lun", que coincide con las fechas de la API (4 y 5 de octubre).
   - `npm run build` limpio; lint sin problemas nuevos.
+
+## Paso 15: Versión 1.2.0 e instalador
+
+- **Versión 1.2.0** en `backend/pom.xml`, `frontend/package.json`, `electron/package.json` y los dos lockfiles (commit `chore: version 1.2.0`).
+- **Build:** `mvn clean package -DskipTests` (jar 1.2.0) y `npm run build` del frontend.
+- **JRE:** `electron/jre` regenerado con `jlink` del JDK 21 (51 MB). `jdeps` no muestra módulos nuevos respecto al README.
+- **Instalador:** `electron/dist/Heladeria TPV Setup 1.2.0.exe`, de **168,5 MB**. La 1.1.0 con JRE pesaba 168 MB; las fuentes suman unos 230 KB. No está en git.
+- **Contenido verificado** en `win-unpacked/resources`:
+  - jar `version=1.2.0` y `jre/`.
+  - En `frontend/`: DM Sans, Fraunces, Space Mono (solo recibos) y `neveo-logo.png`, sin ninguna referencia a Google Fonts.
+- **Prueba de humo de lo empaquetado:** el `java.exe` del JRE incluido corrió el jar y el frontend de `win-unpacked`, tal como los lanza Electron, pero con la base de prueba. Todas las peticiones externas quedaron bloqueadas (sin internet).
+  - Las 8 pantallas cargan con DM Sans y Fraunces, sin scroll horizontal.
+  - Flujo completo:
+    - Agregar un producto a "Barra" y "Dejar en la cuenta" ("Cuenta guardada: $ 4.000").
+    - Volver a entrar y cobrar con 10 % por Nequi ($ 3.600).
+    - El recibo abre con Space Mono, el descuento y NEQUI.
+    - El modal de cierre muestra $ 3.600 y 1 venta.
+  - Ninguna petición externa ni fallida, sin errores de JavaScript. Al detenerlo no quedó ningún `java.exe` vivo.
+- **Pendiente: probar instalado.** La app empaquetada guarda los datos siempre en `%APPDATA%\heladeria-tpv`, que en este PC tiene la base real, y esa ruta no se puede redirigir. Por eso no se instaló ni se abrió la app empaquetada: falta que Gabs la pruebe instalada (ventana de Electron, impresión, cierre sin `java.exe` vivo).
