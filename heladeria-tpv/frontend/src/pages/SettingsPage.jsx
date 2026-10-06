@@ -2,6 +2,8 @@ import { useEffect, useState, useRef } from 'react'
 import { getBusinessSettings, updateBusinessSettings, updateAdminPassword } from '../api/businessSettings'
 import { getCashiers, createCashier, deleteCashier } from '../api/cashiers'
 import { downloadBackup } from '../api/backup'
+import { Button, Card, Field, Input, Notice } from '../components/ui'
+import './SettingsPage.css'
 
 const MAX_LOGO_SIZE = 2 * 1024 * 1024
 
@@ -118,243 +120,164 @@ export default function SettingsPage() {
     }
   }
 
-  const inputStyle = {
-    width: '100%',
-    padding: '10px 12px',
-    border: '1px solid var(--border)',
-    borderRadius: 10,
-    fontSize: 14,
-    fontWeight: 700,
-    color: 'var(--ink)',
-    background: '#fff',
-  }
+  const businessFields = [
+    { key: 'businessName', label: 'Nombre del negocio', required: true },
+    { key: 'nit', label: 'NIT' },
+    { key: 'address', label: 'Dirección' },
+    { key: 'phone', label: 'Teléfono' },
+    { key: 'businessHours', label: 'Horario de atención', placeholder: 'Ej: Lun-Sáb 10am-8pm' },
+    { key: 'instagramHandle', label: 'Instagram', placeholder: '@tunegocio' },
+    { key: 'facebookUrl', label: 'Facebook', placeholder: 'URL de Facebook' },
+    { key: 'whatsappNumber', label: 'WhatsApp', placeholder: 'Ej: 310 123 4567' },
+  ]
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', padding: 32 }}>
-      <div style={{ maxWidth: 880, margin: '0 auto' }}>
-        <h1 style={{ fontSize: 25, fontWeight: 900, margin: '0 0 4px' }}>Configuración</h1>
-        <p style={{ fontSize: 14, color: 'var(--text-soft)', fontWeight: 700, margin: '0 0 24px' }}>
-          Datos del negocio, cajeros y respaldo de datos.
-        </p>
+    <div className="settings-page">
+      <div className="settings-page__inner">
+        <header className="settings-page__header">
+          <h1 className="ui-page-title">Configuración</h1>
+          <p className="settings-page__subtitle">Datos del negocio, cajeros y respaldo de datos.</p>
+        </header>
 
-        {/* Datos del negocio */}
-        <div className="card" style={{ padding: 26, marginBottom: 20 }}>
-          <div style={{ fontSize: 17, fontWeight: 900, color: 'var(--ink)', marginBottom: 4 }}>Datos del negocio</div>
-          <p style={{ fontSize: 13, color: 'var(--text-soft)', fontWeight: 700, margin: '0 0 18px' }}>
-            Aparecen en los comprobantes de cierre de turno y venta.
-          </p>
+        <div className="settings-grid">
+          {/* Datos del negocio */}
+          <Card className="settings-card">
+            <h2 className="settings-card__title">Datos del negocio</h2>
+            <p className="settings-card__text">Aparecen en los comprobantes de cierre de turno y venta.</p>
 
-          <form onSubmit={handleSaveSettings}>
-            {/* Logo */}
-            <div style={{ marginBottom: 18 }}>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 8 }}>
-                Logo del negocio
-              </label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                <div
-                  onClick={() => fileInputRef.current?.click()}
-                  style={{
-                    width: 72, height: 72, borderRadius: 14,
-                    background: settings.logoBase64 ? 'transparent' : 'var(--tile-bg)',
-                    border: '2px dashed var(--border)',
-                    display: 'grid', placeItems: 'center',
-                    cursor: 'pointer', overflow: 'hidden', flex: 'none',
-                  }}
-                >
-                  {settings.logoBase64 ? (
-                    <img src={settings.logoBase64} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                  ) : (
-                    <span style={{ fontSize: 28, color: 'var(--text-faint)' }}>+</span>
-                  )}
-                </div>
-                <div>
+            <form onSubmit={handleSaveSettings} className="settings-form">
+              <div className="ui-field">
+                <span className="ui-field__label">Logo del negocio</span>
+                <div className="logo-picker">
                   <button
                     type="button"
+                    className={`logo-picker__preview ${settings.logoBase64 ? 'logo-picker__preview--filled' : ''}`}
                     onClick={() => fileInputRef.current?.click()}
-                    style={{ background: 'var(--tile-bg)', border: 'none', padding: '8px 14px', borderRadius: 9, fontSize: 13, fontWeight: 800, color: 'var(--ink)', cursor: 'pointer' }}
+                    aria-label={settings.logoBase64 ? 'Cambiar logo' : 'Subir logo'}
                   >
-                    {settings.logoBase64 ? 'Cambiar logo' : 'Subir logo'}
+                    {settings.logoBase64 ? (
+                      <img src={settings.logoBase64} alt="Logo" />
+                    ) : (
+                      <svg width="24" height="24" aria-hidden="true"><use href="#ic-plus" /></svg>
+                    )}
                   </button>
-                  {settings.logoBase64 && (
-                    <button
-                      type="button"
-                      onClick={() => setSettings((prev) => ({ ...prev, logoBase64: null }))}
-                      style={{ background: 'none', border: 'none', padding: '8px 10px', fontSize: 12, fontWeight: 700, color: 'var(--text-faint)', cursor: 'pointer' }}
-                    >
-                      Quitar
-                    </button>
-                  )}
-                  <div style={{ fontSize: 11, color: 'var(--text-faint)', marginTop: 4 }}>PNG, JPG. Máx. 2 MB.</div>
+                  <div className="logo-picker__actions">
+                    <div className="logo-picker__buttons">
+                      <Button variant="secondary" size="sm" onClick={() => fileInputRef.current?.click()}>
+                        {settings.logoBase64 ? 'Cambiar logo' : 'Subir logo'}
+                      </Button>
+                      {settings.logoBase64 && (
+                        <Button variant="danger-text" onClick={() => setSettings((prev) => ({ ...prev, logoBase64: null }))}>
+                          Quitar
+                        </Button>
+                      )}
+                    </div>
+                    <div className="ui-field__hint">PNG, JPG. Máx. 2 MB. Se usa en los recibos.</div>
+                  </div>
+                  <input ref={fileInputRef} type="file" accept="image/*" onChange={handleLogoSelect} hidden />
                 </div>
-                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleLogoSelect} style={{ display: 'none' }} />
               </div>
-            </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>
-                  Nombre del negocio
-                </label>
-                <input style={inputStyle} value={settings.businessName} onChange={(e) => setSettings({ ...settings, businessName: e.target.value })} required />
+              <div className="settings-form__grid">
+                {businessFields.map((f) => (
+                  <Field key={f.key} label={f.label}>
+                    <Input
+                      value={settings[f.key] || ''}
+                      onChange={(e) => setSettings({ ...settings, [f.key]: e.target.value })}
+                      placeholder={f.placeholder}
+                      required={f.required}
+                    />
+                  </Field>
+                ))}
               </div>
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>
-                  NIT
-                </label>
-                <input style={inputStyle} value={settings.nit || ''} onChange={(e) => setSettings({ ...settings, nit: e.target.value })} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>
-                  Dirección
-                </label>
-                <input style={inputStyle} value={settings.address || ''} onChange={(e) => setSettings({ ...settings, address: e.target.value })} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>
-                  Teléfono
-                </label>
-                <input style={inputStyle} value={settings.phone || ''} onChange={(e) => setSettings({ ...settings, phone: e.target.value })} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>
-                  Horario de atención
-                </label>
-                <input style={inputStyle} placeholder="Ej: Lun-Sáb 10am-8pm" value={settings.businessHours || ''} onChange={(e) => setSettings({ ...settings, businessHours: e.target.value })} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>
-                  Instagram
-                </label>
-                <input style={inputStyle} placeholder="@tunegocio" value={settings.instagramHandle || ''} onChange={(e) => setSettings({ ...settings, instagramHandle: e.target.value })} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>
-                  Facebook
-                </label>
-                <input style={inputStyle} placeholder="URL de Facebook" value={settings.facebookUrl || ''} onChange={(e) => setSettings({ ...settings, facebookUrl: e.target.value })} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>
-                  WhatsApp
-                </label>
-                <input style={inputStyle} placeholder="Ej: 310 123 4567" value={settings.whatsappNumber || ''} onChange={(e) => setSettings({ ...settings, whatsappNumber: e.target.value })} />
-              </div>
-            </div>
 
-            {settingsError && <p style={{ color: 'var(--red-text)', fontSize: 13, marginBottom: 10 }}>{settingsError}</p>}
+              {settingsError && <Notice variant="danger">{settingsError}</Notice>}
 
-            <button type="submit" className="btn-ink" style={{ padding: '12px 22px', fontSize: 14 }}>
-              {saved ? '✓ Guardado' : 'Guardar cambios'}
-            </button>
-          </form>
-        </div>
+              <div>
+                <Button type="submit">{saved ? '✓ Guardado' : 'Guardar cambios'}</Button>
+              </div>
+            </form>
+          </Card>
 
-        {/* Cajeros */}
-        <div className="card" style={{ padding: 26, marginBottom: 20 }}>
-          <div style={{ fontSize: 17, fontWeight: 900, color: 'var(--ink)', marginBottom: 4 }}>Cajeros</div>
-          <p style={{ fontSize: 13, color: 'var(--text-soft)', fontWeight: 700, margin: '0 0 18px' }}>
-            Personas que pueden atender un turno de caja.
-          </p>
+          <div className="settings-grid__side">
+            {/* Cajeros */}
+            <Card className="settings-card">
+              <h2 className="settings-card__title">Cajeros</h2>
+              <p className="settings-card__text">Personas que pueden atender un turno de caja.</p>
 
-          {cashierError && <p style={{ color: 'var(--red-text)', fontSize: 13, marginBottom: 10 }}>{cashierError}</p>}
+              {cashierError && <Notice variant="danger">{cashierError}</Notice>}
 
-          {cashiers.length === 0 ? (
-            <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 14 }}>
-              No hay cajeros configurados.
-            </p>
-          ) : (
-            <div style={{ marginBottom: 14 }}>
-              {cashiers.map((c) => (
-                <div
-                  key={c.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '12px 0',
-                    borderBottom: '1px solid var(--border-soft-2)',
-                  }}
-                >
-                  <span style={{ fontWeight: 800, color: 'var(--ink)', fontSize: 15 }}>{c.name}</span>
-                  <button
-                    onClick={() => handleDeleteCashier(c.id, c.name)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: 'var(--text-faint)',
-                      cursor: 'pointer',
-                      padding: 6,
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <svg width="16" height="16"><use href="#ic-trash" /></svg>
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <form onSubmit={handleAddCashier} style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <input
-              style={{ ...inputStyle, flex: 1 }}
-              placeholder="Nombre del cajero"
-              value={newCashierName}
-              onChange={(e) => setNewCashierName(e.target.value)}
-            />
-            <button type="submit" className="btn-ink" style={{ padding: '10px 18px', fontSize: 14, whiteSpace: 'nowrap' }}>
-              Agregar cajero
-            </button>
-          </form>
-        </div>
-
-        {/* Contraseña de administrador */}
-        <div className="card" style={{ padding: 26, marginBottom: 20 }}>
-          <div style={{ fontSize: 17, fontWeight: 900, color: 'var(--ink)', marginBottom: 4 }}>Contraseña de administrador</div>
-          <p style={{ fontSize: 13, color: 'var(--text-soft)', fontWeight: 700, margin: '0 0 18px' }}>
-            {adminPasswordSet
-              ? 'Se pide para anular ventas. Para cambiarla escribe la actual.'
-              : 'Aún no está configurada. Es necesaria para anular ventas. Mínimo 4 caracteres (puede ser un PIN).'}
-          </p>
-          <form onSubmit={handleSavePassword}>
-            <div style={{ display: 'grid', gridTemplateColumns: adminPasswordSet ? '1fr 1fr 1fr' : '1fr 1fr', gap: 14, marginBottom: 14 }}>
-              {adminPasswordSet && (
-                <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>
-                    Contraseña actual
-                  </label>
-                  <input type="password" autoComplete="off" style={inputStyle} value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+              {cashiers.length === 0 ? (
+                <p className="settings-card__empty">No hay cajeros configurados.</p>
+              ) : (
+                <div className="cashier-list">
+                  {cashiers.map((c) => (
+                    <div key={c.id} className="cashier-list__row">
+                      <span className="cashier-list__avatar" aria-hidden="true">{c.name.trim().charAt(0).toUpperCase()}</span>
+                      <span className="cashier-list__name">{c.name}</span>
+                      <button
+                        type="button"
+                        className="icon-btn icon-btn--danger"
+                        onClick={() => handleDeleteCashier(c.id, c.name)}
+                        aria-label={`Eliminar al cajero ${c.name}`}
+                        title="Eliminar cajero"
+                      >
+                        <svg width="16" height="16" aria-hidden="true"><use href="#ic-trash" /></svg>
+                      </button>
+                    </div>
+                  ))}
                 </div>
               )}
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>
-                  Nueva contraseña
-                </label>
-                <input type="password" autoComplete="new-password" style={inputStyle} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>
-                  Repetir nueva contraseña
-                </label>
-                <input type="password" autoComplete="new-password" style={inputStyle} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
-              </div>
-            </div>
-            {passwordError && <p style={{ color: 'var(--red-text)', fontSize: 13, marginBottom: 10 }}>{passwordError}</p>}
-            <button type="submit" className="btn-ink" style={{ padding: '12px 22px', fontSize: 14 }}>
-              {passwordSaved ? '✓ Guardada' : adminPasswordSet ? 'Cambiar contraseña' : 'Crear contraseña'}
-            </button>
-          </form>
-        </div>
 
-        {/* Respaldo */}
-        <div className="card" style={{ padding: 26 }}>
-          <div style={{ fontSize: 17, fontWeight: 900, color: 'var(--ink)', marginBottom: 4 }}>Respaldo de datos</div>
-          <p style={{ fontSize: 13, color: 'var(--text-soft)', fontWeight: 700, margin: '0 0 18px' }}>
-            Descarga una copia de seguridad de toda la información del sistema.
-          </p>
-          <button onClick={downloadBackup} className="btn-ink" style={{ padding: '12px 22px', fontSize: 14 }}>
-            Descargar copia de seguridad
-          </button>
+              <form onSubmit={handleAddCashier} className="settings-inline-form">
+                <Input
+                  placeholder="Nombre del cajero"
+                  value={newCashierName}
+                  onChange={(e) => setNewCashierName(e.target.value)}
+                  aria-label="Nombre del cajero"
+                />
+                <Button type="submit" variant="secondary">Agregar cajero</Button>
+              </form>
+            </Card>
+
+            {/* Contraseña de administrador */}
+            <Card className="settings-card">
+              <h2 className="settings-card__title">Contraseña de administrador</h2>
+              <p className="settings-card__text">
+                {adminPasswordSet
+                  ? 'Se pide para anular ventas. Para cambiarla escribe la actual.'
+                  : 'Aún no está configurada. Es necesaria para anular ventas. Mínimo 4 caracteres (puede ser un PIN).'}
+              </p>
+              <form onSubmit={handleSavePassword} className="settings-form">
+                {adminPasswordSet && (
+                  <Field label="Contraseña actual">
+                    <Input type="password" autoComplete="off" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+                  </Field>
+                )}
+                <Field label="Nueva contraseña">
+                  <Input type="password" autoComplete="new-password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+                </Field>
+                <Field label="Repetir nueva contraseña">
+                  <Input type="password" autoComplete="new-password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+                </Field>
+                {passwordError && <Notice variant="danger">{passwordError}</Notice>}
+                <div>
+                  <Button type="submit">
+                    {passwordSaved ? '✓ Guardada' : adminPasswordSet ? 'Cambiar contraseña' : 'Crear contraseña'}
+                  </Button>
+                </div>
+              </form>
+            </Card>
+
+            {/* Respaldo */}
+            <Card className="settings-card">
+              <h2 className="settings-card__title">Respaldo de datos</h2>
+              <p className="settings-card__text">Descarga una copia de seguridad de toda la información del sistema.</p>
+              <div>
+                <Button variant="secondary" onClick={downloadBackup}>Descargar copia de seguridad</Button>
+              </div>
+            </Card>
+          </div>
         </div>
       </div>
     </div>

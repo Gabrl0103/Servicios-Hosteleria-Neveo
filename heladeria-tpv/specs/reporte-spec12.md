@@ -222,3 +222,21 @@ Decisión de Gabs: para las categorías conocidas se usan los colores del diseñ
   - **Resto:** Disponible/Agotado cambia en el backend; Eliminar pide confirmación y borra; el filtro por chip funciona; Escape cierra el formulario; el foco inicial queda en Nombre.
   - Sin scroll horizontal ni cifras cortadas a 1366, 1600 y 1920. Sin errores de JavaScript. `npm run build` limpio; lint sin problemas nuevos.
 - **Nota:** el nombre que se muestra para una categoría es el del primer producto que la usa. En la base de prueba hay "ACAI", "Açaí" y "acaí", así que se ve "ACAI".
+
+## Paso 11: Configuración (Parte 2, punto 9)
+
+- `pages/SettingsPage.jsx` (solo el render) y `SettingsPage.css`.
+  - **Distribución:** en dos columnas. A la izquierda, "Datos del negocio": logo y 8 campos con `Field`/`Input`. A la derecha: cajeros, contraseña de administrador y respaldo. Títulos en Fraunces y errores con `Notice`.
+  - **Textos:** iguales. Solo se agregó "Se usa en los recibos." en la ayuda del logo, por la decisión del logo fijo en la barra.
+- **Verificado** (Playwright por DOM y API, base de prueba):
+  - **Logo:**
+    - Un archivo que no es imagen da "El archivo debe ser una imagen".
+    - Con una imagen aparece la vista previa; "Guardar cambios" pasa a "✓ Guardado" y el logo queda en el backend.
+    - La barra superior sigue con el logo fijo y el recibo de venta muestra el subido.
+  - **Cajeros:** se agregan; eliminar pide confirmación y borra.
+  - **Contraseña:**
+    - Con una ya configurada aparecen los 3 campos, todos `type=password`.
+    - Muestra los errores "al menos 4 caracteres", "no coinciden" y "La contraseña actual es incorrecta".
+    - Con la actual correcta se cambia ("✓ Guardada"), y la anterior deja de servir para anular (403).
+  - **Respaldo:** "Descargar copia de seguridad" descarga `heladeria-backup-2026-10-05.db`, un SQLite válido de 160 KB.
+  - Sin scroll horizontal a 1366, 1600 y 1920. Sin errores de JavaScript. `npm run build` limpio; lint sin problemas nuevos.
