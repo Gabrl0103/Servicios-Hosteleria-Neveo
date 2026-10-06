@@ -1,0 +1,541 @@
+/* Pantalla Reportes (derivada de la propuesta A). */
+
+.reports-page {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  padding: var(--space-9) var(--space-11) var(--space-10);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.reports-page__inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.reports-page__header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-7);
+  flex-wrap: wrap;
+}
+
+.reports-page__subtitle,
+.reports-page__muted {
+  margin: 0;
+  font-size: var(--font-size-body);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.report-label {
+  font-size: var(--font-size-small);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+/* KPIs fijos */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-6);
+}
+
+.kpi-card {
+  padding: var(--space-7) var(--space-8);
+  min-width: 0;
+}
+
+.kpi-card__value {
+  margin-top: var(--space-2);
+  font-size: 24px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kpi-card--accent {
+  border-color: transparent;
+  background: var(--color-primary-dark);
+  color: var(--color-on-primary);
+}
+
+.kpi-card--accent .report-label {
+  color: var(--color-on-dark-muted);
+}
+
+/* Tarjetas con titulo */
+.report-card {
+  padding: var(--space-8) var(--space-9);
+  min-width: 0;
+}
+
+.report-card__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--font-size-amount);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.report-card__subtitle {
+  margin: 2px 0 var(--space-6);
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.report-card__title + .ranking,
+.report-card__title + .methods,
+.report-card__title + .reports-page__muted {
+  margin-top: var(--space-6);
+}
+
+/* Graficas (geometria de utils/chartGeometry.js) */
+.chart {
+  position: relative;
+}
+
+.chart__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.chart__axis {
+  fill: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart__tooltip {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-link);
+  background: var(--color-primary-dark);
+  color: var(--color-on-primary);
+  font-size: var(--font-size-small);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: var(--shadow-raised);
+}
+
+/* Selector de periodo */
+.period-bar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+  margin-top: var(--space-3);
+}
+
+.period-bar__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--font-size-panel-title);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.period-bar__subtitle {
+  margin: 2px 0 0;
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.segmented {
+  display: flex;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+}
+
+.segmented__option {
+  height: 36px;
+  padding: 0 var(--space-6);
+  border: none;
+  border-radius: var(--radius-link);
+  background: transparent;
+  color: var(--color-text-label);
+  font-family: inherit;
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.segmented__option:hover {
+  background: var(--color-surface-sunken);
+}
+
+.segmented__option--active,
+.segmented__option--active:hover {
+  background: var(--color-primary-tint);
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.segmented__option:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+.custom-range {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-5);
+  padding: var(--space-7) var(--space-8);
+}
+
+.custom-range .ui-field {
+  width: 200px;
+}
+
+/* Reporte del periodo */
+.period-report {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+  transition: opacity .15s;
+}
+
+.period-report--loading {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.period-kpis {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: var(--space-7);
+}
+
+.period-kpi {
+  padding: var(--space-8) var(--space-9);
+  min-width: 0;
+}
+
+.period-kpi__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.period-kpi__value {
+  margin-top: var(--space-2);
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.period-kpi__day {
+  margin-top: var(--space-2);
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.period-kpi__note {
+  margin-top: var(--space-3);
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+}
+
+.report-columns {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: var(--space-7);
+  align-items: start;
+}
+
+/* Ranking */
+.ranking__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-4) 0;
+}
+
+.ranking__row + .ranking__row {
+  border-top: 1px solid var(--color-border);
+}
+
+.ranking__pos {
+  width: 20px;
+  font-size: var(--font-size-body);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+}
+
+.ranking__name {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--font-size-body-lg);
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ranking__qty {
+  width: 64px;
+  text-align: right;
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+}
+
+.ranking__total {
+  width: 100px;
+  text-align: right;
+  font-size: var(--font-size-body);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Metodos de pago */
+.methods {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+}
+
+.methods__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+
+.methods__name {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--font-size-body-lg);
+  font-weight: 700;
+}
+
+.methods__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-pill);
+}
+
+.methods__value {
+  font-size: var(--font-size-body);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.methods__track {
+  height: 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-sunken);
+  overflow: hidden;
+}
+
+.methods__fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+}
+
+.methods__pct {
+  margin-top: var(--space-1);
+  font-size: var(--font-size-small);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+}
+
+/* Ventas del periodo */
+.orders-card {
+  overflow: hidden;
+}
+
+.orders-card__toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-7) var(--space-9);
+  border: none;
+  background: none;
+  color: var(--color-text);
+  font-family: inherit;
+  text-align: left;
+}
+
+.orders-card__toggle:hover {
+  background: var(--color-surface-sunken);
+}
+
+.orders-card__toggle:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 3px var(--color-focus-ring);
+}
+
+.orders-card__title {
+  font-family: var(--font-display);
+  font-size: var(--font-size-amount);
+  font-weight: 700;
+}
+
+.orders-card__count {
+  margin-left: var(--space-3);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+}
+
+.orders-card__chevron {
+  color: var(--color-text-secondary);
+  transition: transform .15s;
+}
+
+.orders-card__chevron--open {
+  transform: rotate(180deg);
+}
+
+.orders-card__body {
+  border-top: 1px solid var(--color-border);
+  padding: 0 var(--space-5) var(--space-7);
+}
+
+.orders-card__body > .reports-page__muted {
+  padding: var(--space-7) var(--space-4) 0;
+}
+
+.orders-table-wrap {
+  overflow-x: auto;
+}
+
+.orders-table td {
+  padding-top: var(--space-4);
+  padding-bottom: var(--space-4);
+}
+
+.orders-table__badge {
+  margin-left: var(--space-3);
+  padding: 3px var(--space-3);
+  font-size: var(--font-size-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.orders-table__date {
+  white-space: nowrap;
+}
+
+.orders-table__method {
+  font-size: var(--font-size-small);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--color-text-secondary);
+}
+
+.orders-table__total {
+  font-weight: 800;
+}
+
+.orders-table__actions {
+  width: 1%;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.orders-table__actions .icon-btn + .icon-btn {
+  margin-left: var(--space-2);
+}
+
+/* Fila anulada: tachada y atenuada, con el detalle debajo */
+.orders-table__row--voided td {
+  color: var(--color-text-secondary);
+  border-bottom: none;
+}
+
+.orders-table__row--voided .orders-table__strike {
+  text-decoration: line-through;
+}
+
+.orders-table__void-info td {
+  padding-top: 0;
+  font-size: var(--font-size-small);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+}
+
+.orders-table tbody tr.orders-table__void-info:hover td,
+.orders-table tbody tr.orders-table__row--voided:hover td {
+  background: transparent;
+}
+
+.orders-card__more {
+  margin: var(--space-5) 0 0 var(--space-4);
+}
+
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-link);
+  background: var(--color-surface);
+  color: var(--color-text);
+  vertical-align: middle;
+}
+
+.icon-btn:hover {
+  background: var(--color-primary-tint);
+  border-color: var(--color-primary-border);
+  color: var(--color-primary);
+}
+
+.icon-btn--danger {
+  color: var(--color-danger);
+}
+
+.icon-btn--danger:hover {
+  background: var(--color-danger-bg);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.icon-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+/* Modal de anulacion */
+.void-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}

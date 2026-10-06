@@ -5,8 +5,10 @@ import { getOrders, anularOrder } from '../api/orders'
 import { getBusinessSettings } from '../api/businessSettings'
 import { useSession } from '../context/SessionContext'
 import { formatCurrency } from '../utils/format'
-import { categoryInfo } from '../utils/categoryColors'
+import { Button, Card, Chip, Field, Input, Modal, Notice } from '../components/ui'
+import CategoryIcon from '../components/CategoryIcon'
 import { niceAxisTicks, formatAxisLabel, buildBarGeometry } from '../utils/chartGeometry'
+import './ReportsPage.css'
 
 const METHODS = [
   { value: 'EFECTIVO', label: 'Efectivo', color: '#27A567' },
@@ -98,6 +100,8 @@ export default function ReportsPage() {
   const [showPasswordNotice, setShowPasswordNotice] = useState(false)
   const [anularLoading, setAnularLoading] = useState(false)
   const [anularError, setAnularError] = useState('')
+  // Foco inicial del modal de anulacion: el motivo.
+  const anularMotivoRef = useRef(null)
 
   const { cashRegister } = useSession()
   const navigate = useNavigate()
@@ -233,15 +237,15 @@ export default function ReportsPage() {
 
   return (
     <>
-    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', padding: 32 }}>
-      <div style={{ maxWidth: 1080, margin: '0 auto' }}>
-        <h1 style={{ fontSize: 25, fontWeight: 900, margin: '0 0 4px' }}>Reportes</h1>
-        <p style={{ fontSize: 14, color: 'var(--text-soft)', fontWeight: 700, margin: '0 0 18px' }}>
-          Vista general del negocio.
-        </p>
+    <div className="reports-page">
+      <div className="reports-page__inner">
+        <header className="reports-page__header">
+          <h1 className="ui-page-title">Reportes</h1>
+          <p className="reports-page__subtitle">Vista general del negocio.</p>
+        </header>
 
         {/* KPIs fijos, independientes del filtro de periodo de abajo */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14, marginBottom: 26 }}>
+        <div className="kpi-grid">
           <KpiCard label="Cuadre actual" value={kpis?.currentShiftTotal} />
           <KpiCard label="Últimos 7 días" value={kpis?.last7DaysTotal} />
           <KpiCard label="Últimos 30 días" value={kpis?.last30DaysTotal} />
@@ -249,33 +253,31 @@ export default function ReportsPage() {
         </div>
 
         {/* Gráfico de barras: tendencia mensual */}
-        <div className="card" style={{ padding: '22px 24px', marginBottom: 26, position: 'relative' }}>
-          <div style={{ fontSize: 15, fontWeight: 900, color: 'var(--ink)', marginBottom: 4 }}>Facturado por mes</div>
-          <div style={{ fontSize: 13, color: 'var(--text-soft)', fontWeight: 700, marginBottom: 14 }}>
-            Últimos 6 meses
-          </div>
+        <Card className="report-card">
+          <h2 className="report-card__title">Facturado por mes</h2>
+          <div className="report-card__subtitle">Últimos 6 meses</div>
           {barGeometry && (
-            <div style={{ position: 'relative' }}>
+            <div className="chart">
               <svg
                 viewBox={`0 0 ${barGeometry.width} ${barGeometry.height}`}
-                style={{ width: '100%', height: 'auto', display: 'block' }}
+                className="chart__svg"
                 onMouseLeave={() => setBarHover(null)}
               >
                 {barGeometry.gridLines.map((gl, i) => (
                   <g key={i}>
-                    <line x1={barGeometry.padLeft} y1={gl.y} x2={barGeometry.width - 20} y2={gl.y} stroke="var(--border-soft)" strokeWidth="1" />
-                    <text x={barGeometry.padLeft - 8} y={gl.y + 4} textAnchor="end" fontFamily="DM Sans, system-ui, sans-serif" fontSize="11" fill="#a89e8c" fontWeight="700">
+                    <line x1={barGeometry.padLeft} y1={gl.y} x2={barGeometry.width - 20} y2={gl.y} stroke="var(--color-border)" strokeWidth="1" />
+                    <text x={barGeometry.padLeft - 8} y={gl.y + 4} textAnchor="end" className="chart__axis" fontSize="11">
                       {gl.label}
                     </text>
                   </g>
                 ))}
                 {barGeometry.bars.map((b, i) => (
                   <g key={i} onMouseEnter={() => setBarHover(i)} onMouseLeave={() => setBarHover(null)} style={{ cursor: 'pointer' }}>
-                    <rect x={b.x} y={b.y} width={barGeometry.barWidth} height={b.barHeight} rx="5" fill="#DA2C5E" fillOpacity={barHover === i ? 1 : 0.85} />
+                    <rect x={b.x} y={b.y} width={barGeometry.barWidth} height={b.barHeight} rx="6" fill="var(--color-primary)" fillOpacity={barHover === i ? 1 : 0.82} />
                     {barHover === i && (
-                      <rect x={b.x - 2} y={b.y - 2} width={barGeometry.barWidth + 4} height={b.barHeight + 4} rx="6" fill="none" stroke="#DA2C5E" strokeWidth="2" strokeOpacity="0.4" />
+                      <rect x={b.x - 2} y={b.y - 2} width={barGeometry.barWidth + 4} height={b.barHeight + 4} rx="7" fill="none" stroke="var(--color-primary)" strokeWidth="2" strokeOpacity="0.35" />
                     )}
-                    <text x={b.x + barGeometry.barWidth / 2} y={barGeometry.bottom + 22} textAnchor="middle" fontFamily="DM Sans, system-ui, sans-serif" fontSize="13" fill="#a89e8c" fontWeight="700">
+                    <text x={b.x + barGeometry.barWidth / 2} y={barGeometry.bottom + 22} textAnchor="middle" className="chart__axis" fontSize="13">
                       {b.label}
                     </text>
                   </g>
@@ -283,20 +285,10 @@ export default function ReportsPage() {
               </svg>
               {barHover !== null && barGeometry.bars[barHover] && (
                 <div
+                  className="chart__tooltip"
                   style={{
-                    position: 'absolute',
                     left: `${(barGeometry.bars[barHover].x + barGeometry.barWidth / 2) / barGeometry.width * 100}%`,
                     top: `${barGeometry.bars[barHover].y / barGeometry.height * 100 - 6}%`,
-                    transform: 'translate(-50%, -100%)',
-                    background: 'var(--ink)',
-                    color: '#fff',
-                    padding: '6px 12px',
-                    borderRadius: 8,
-                    fontSize: 12,
-                    fontWeight: 800,
-                    whiteSpace: 'nowrap',
-                    pointerEvents: 'none',
-                    boxShadow: 'var(--shadow-card, 0 2px 8px rgba(0,0,0,.12))',
                   }}
                 >
                   {barGeometry.bars[barHover].label}: {formatCurrency(barGeometry.bars[barHover].value)}
@@ -304,44 +296,30 @@ export default function ReportsPage() {
               )}
             </div>
           )}
-        </div>
+        </Card>
 
-        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 22, flexWrap: 'wrap', gap: 14 }}>
+        <div className="period-bar">
           <div>
-            <div style={{ fontSize: 17, fontWeight: 900, color: 'var(--ink)' }}>Detalle por periodo</div>
-            <p style={{ fontSize: 13, color: 'var(--text-soft)', fontWeight: 700, margin: '2px 0 0' }}>
-              Elige un rango para ver el desglose completo.
-            </p>
+            <h2 className="period-bar__title">Detalle por periodo</h2>
+            <p className="period-bar__subtitle">Elige un rango para ver el desglose completo.</p>
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div className="segmented" role="group" aria-label="Periodo">
             {presets.map((p) => (
               <button
                 key={p.value}
+                type="button"
                 onClick={() => selectPreset(p.value)}
-                style={{
-                  padding: '10px 16px',
-                  borderRadius: 11,
-                  fontSize: 13,
-                  fontWeight: 800,
-                  border: preset === p.value ? 'none' : '1px solid var(--border)',
-                  background: preset === p.value ? 'var(--ink)' : '#fff',
-                  color: preset === p.value ? '#fff' : 'var(--text-muted)',
-                }}
+                className={`segmented__option ${preset === p.value ? 'segmented__option--active' : ''}`}
+                aria-pressed={preset === p.value}
               >
                 {p.label}
               </button>
             ))}
             <button
+              type="button"
               onClick={() => setPreset('custom')}
-              style={{
-                padding: '10px 16px',
-                borderRadius: 11,
-                fontSize: 13,
-                fontWeight: 800,
-                border: preset === 'custom' ? 'none' : '1px solid var(--border)',
-                background: preset === 'custom' ? 'var(--ink)' : '#fff',
-                color: preset === 'custom' ? '#fff' : 'var(--text-muted)',
-              }}
+              className={`segmented__option ${preset === 'custom' ? 'segmented__option--active' : ''}`}
+              aria-pressed={preset === 'custom'}
             >
               Personalizado
             </button>
@@ -349,115 +327,80 @@ export default function ReportsPage() {
         </div>
 
         {preset === 'custom' && (
-          <div className="card" style={{ display: 'flex', gap: 10, alignItems: 'end', marginBottom: 16, padding: 18 }}>
-            <div>
-              <label style={{ display: 'block', fontSize: 13, marginBottom: 4, fontWeight: 700, color: 'var(--text-muted)' }}>Desde</label>
-              <input type="date" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} style={{ border: '1px solid var(--border)', borderRadius: 10, padding: '8px 10px' }} />
-            </div>
-            <div>
-              <label style={{ display: 'block', fontSize: 13, marginBottom: 4, fontWeight: 700, color: 'var(--text-muted)' }}>Hasta</label>
-              <input type="date" value={customTo} onChange={(e) => setCustomTo(e.target.value)} style={{ border: '1px solid var(--border)', borderRadius: 10, padding: '8px 10px' }} />
-            </div>
-            <button onClick={applyCustomRange} className="btn-ink" style={{ padding: '10px 18px' }}>
-              Consultar
-            </button>
-          </div>
+          <Card className="custom-range">
+            <Field label="Desde">
+              <Input type="date" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} />
+            </Field>
+            <Field label="Hasta">
+              <Input type="date" value={customTo} onChange={(e) => setCustomTo(e.target.value)} />
+            </Field>
+            <Button onClick={applyCustomRange}>Consultar</Button>
+          </Card>
         )}
 
-        {error && <p style={{ color: 'var(--red-text)' }}>{error}</p>}
-        {loading && !report && <p style={{ color: 'var(--text-soft)' }}>Cargando...</p>}
+        {error && <Notice variant="danger">{error}</Notice>}
+        {loading && !report && <p className="reports-page__muted">Cargando...</p>}
 
         {report && (
-          <div style={{ position: 'relative', opacity: loading ? 0.5 : 1, transition: 'opacity 0.15s', pointerEvents: loading ? 'none' : 'auto' }}>
-          <>
-            {/* KPIs */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr', gap: 16, marginBottom: 16 }}>
-              <div className="card" style={{ padding: '20px 22px' }}>
-                <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.04em' }}>
-                  Total del periodo
-                </div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginTop: 6 }}>
-                  <span className="mono" style={{ fontSize: 32, fontWeight: 700, color: 'var(--ink)' }}>
-                    {formatCurrency(report.totalAmount)}
-                  </span>
+          <div className={`period-report ${loading ? 'period-report--loading' : ''}`}>
+            {/* KPIs del periodo */}
+            <div className="period-kpis">
+              <Card className="period-kpi">
+                <div className="report-label">Total del periodo</div>
+                <div className="period-kpi__row">
+                  <span className="period-kpi__value">{formatCurrency(report.totalAmount)}</span>
                   {report.percentChangeVsPrevious != null && (
-                    <span
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 4,
-                        fontSize: 14,
-                        fontWeight: 800,
-                        color: report.percentChangeVsPrevious >= 0 ? 'var(--green-text)' : 'var(--red-text)',
-                        background: report.percentChangeVsPrevious >= 0 ? 'var(--green-bg)' : 'var(--red-bg)',
-                        padding: '4px 9px',
-                        borderRadius: 8,
-                      }}
-                    >
-                      <svg width="14" height="14">
+                    <Chip variant={report.percentChangeVsPrevious >= 0 ? 'success' : 'danger'}>
+                      <svg width="14" height="14" aria-hidden="true">
                         <use href={report.percentChangeVsPrevious >= 0 ? '#ic-up' : '#ic-down'} />
                       </svg>
-                      {Math.abs(report.percentChangeVsPrevious).toFixed(1)}%
-                    </span>
+                      <span className="ui-num">{Math.abs(report.percentChangeVsPrevious).toFixed(1)}%</span>
+                    </Chip>
                   )}
                 </div>
-                <div className="mono" style={{ fontSize: 12.5, color: 'var(--text-soft)', fontWeight: 700, marginTop: 8 }}>
-                  Periodo anterior: {formatCurrency(report.previousPeriodAmount)}
-                </div>
-              </div>
-              <div className="card" style={{ padding: '20px 22px' }}>
-                <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.04em' }}>
-                  Ventas
-                </div>
-                <div className="mono" style={{ fontSize: 32, fontWeight: 700, color: 'var(--ink)', marginTop: 6 }}>
-                  {report.totalOrders}
-                </div>
-                <div className="mono" style={{ fontSize: 12.5, color: 'var(--text-soft)', fontWeight: 700, marginTop: 8 }}>
-                  Ticket prom. {formatCurrency(report.averageTicket)}
-                </div>
-              </div>
-              <div className="card" style={{ padding: '20px 22px' }}>
-                <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.04em' }}>
-                  Mejor día
-                </div>
-                <div style={{ fontSize: 24, fontWeight: 900, color: 'var(--ink)', marginTop: 6 }}>
+                <div className="period-kpi__note">Periodo anterior: {formatCurrency(report.previousPeriodAmount)}</div>
+              </Card>
+              <Card className="period-kpi">
+                <div className="report-label">Ventas</div>
+                <div className="period-kpi__value">{report.totalOrders}</div>
+                <div className="period-kpi__note">Ticket prom. {formatCurrency(report.averageTicket)}</div>
+              </Card>
+              <Card className="period-kpi">
+                <div className="report-label">Mejor día</div>
+                <div className="period-kpi__day">
                   {report.bestDay
                     ? new Date(report.bestDay.date).toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'short' })
                     : 'Sin ventas'}
                 </div>
-                <div className="mono" style={{ fontSize: 12.5, color: 'var(--text-soft)', fontWeight: 700, marginTop: 8 }}>
-                  {report.bestDay ? formatCurrency(report.bestDay.total) : '—'}
-                </div>
-              </div>
+                <div className="period-kpi__note">{report.bestDay ? formatCurrency(report.bestDay.total) : '—'}</div>
+              </Card>
             </div>
 
             {/* Gráfico de línea */}
-            <div className="card" style={{ padding: '22px 24px', marginBottom: 16, position: 'relative' }}>
-              <div style={{ fontSize: 15, fontWeight: 900, color: 'var(--ink)', marginBottom: 4 }}>Ventas por día</div>
-              <div style={{ fontSize: 13, color: 'var(--text-soft)', fontWeight: 700, marginBottom: 14 }}>
-                {report.dailySales.length} día(s) en el rango seleccionado
-              </div>
+            <Card className="report-card">
+              <h2 className="report-card__title">Ventas por día</h2>
+              <div className="report-card__subtitle">{report.dailySales.length} día(s) en el rango seleccionado</div>
               {chart && (
-                <div style={{ position: 'relative' }}>
+                <div className="chart">
                   <svg
                     viewBox={`0 0 ${chart.width} ${chart.height}`}
-                    style={{ width: '100%', height: 'auto', display: 'block' }}
+                    className="chart__svg"
                     onMouseLeave={() => setLineHover(null)}
                   >
                     {chart.gridLines.map((gl, i) => (
                       <g key={i}>
-                        <line x1={chart.padLeft} y1={gl.y} x2={chart.width - 8} y2={gl.y} stroke={gl.value === 0 ? 'var(--border-strong-2)' : 'var(--border-soft)'} strokeWidth="1" />
-                        <text x={chart.padLeft - 8} y={gl.y + 4} textAnchor="end" fontFamily="DM Sans, system-ui, sans-serif" fontSize="11" fill="#a89e8c" fontWeight="700">
+                        <line x1={chart.padLeft} y1={gl.y} x2={chart.width - 8} y2={gl.y} stroke={gl.value === 0 ? 'var(--color-border-strong)' : 'var(--color-border)'} strokeWidth="1" />
+                        <text x={chart.padLeft - 8} y={gl.y + 4} textAnchor="end" className="chart__axis" fontSize="11">
                           {gl.label}
                         </text>
                       </g>
                     ))}
-                    <polygon points={chart.area} fill="#DA2C5E" fillOpacity="0.08" />
-                    <polyline points={chart.line} fill="none" stroke="#DA2C5E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                    <polygon points={chart.area} fill="var(--color-primary)" fillOpacity="0.08" />
+                    <polyline points={chart.line} fill="none" stroke="var(--color-primary)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
                     {chart.points.map((p, i) => (
                       <g key={i} onMouseEnter={() => setLineHover(i)} onMouseLeave={() => setLineHover(null)} style={{ cursor: 'pointer' }}>
-                        <circle cx={p.x} cy={p.y} r={lineHover === i ? 8 : 5} fill={lineHover === i ? '#DA2C5E' : '#fff'} stroke="#DA2C5E" strokeWidth="3" />
-                        <text x={p.x} y={chart.bottom + 25} textAnchor="middle" fontFamily="DM Sans, system-ui, sans-serif" fontSize="13" fill="#a89e8c" fontWeight="700">
+                        <circle cx={p.x} cy={p.y} r={lineHover === i ? 8 : 5} fill={lineHover === i ? 'var(--color-primary)' : '#fff'} stroke="var(--color-primary)" strokeWidth="3" />
+                        <text x={p.x} y={chart.bottom + 25} textAnchor="middle" className="chart__axis" fontSize="13">
                           {p.label}
                         </text>
                       </g>
@@ -465,20 +408,10 @@ export default function ReportsPage() {
                   </svg>
                   {lineHover !== null && chart.points[lineHover] && (
                     <div
+                      className="chart__tooltip"
                       style={{
-                        position: 'absolute',
                         left: `${chart.points[lineHover].x / chart.width * 100}%`,
                         top: `${chart.points[lineHover].y / chart.height * 100 - 6}%`,
-                        transform: 'translate(-50%, -100%)',
-                        background: 'var(--ink)',
-                        color: '#fff',
-                        padding: '6px 12px',
-                        borderRadius: 8,
-                        fontSize: 12,
-                        fontWeight: 800,
-                        whiteSpace: 'nowrap',
-                        pointerEvents: 'none',
-                        boxShadow: 'var(--shadow-card, 0 2px 8px rgba(0,0,0,.12))',
                       }}
                     >
                       {new Date(chart.points[lineHover].date).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' })}:{' '}
@@ -487,111 +420,89 @@ export default function ReportsPage() {
                   )}
                 </div>
               )}
-            </div>
+            </Card>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: 16 }}>
+            <div className="report-columns">
               {/* Ranking */}
-              <div className="card" style={{ padding: '20px 22px' }}>
-                <div style={{ fontSize: 15, fontWeight: 900, color: 'var(--ink)', marginBottom: 14 }}>Productos más vendidos</div>
+              <Card className="report-card">
+                <h2 className="report-card__title">Productos más vendidos</h2>
                 {report.topProducts.length === 0 ? (
-                  <p style={{ color: 'var(--text-soft)', fontSize: 14 }}>Sin ventas en este periodo.</p>
+                  <p className="reports-page__muted">Sin ventas en este periodo.</p>
                 ) : (
-                  report.topProducts.map((p, i) => {
-                    const info = categoryInfo(p.category)
-                    return (
-                      <div
-                        key={p.productId}
-                        style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '11px 0', borderBottom: '1px solid var(--border-soft-2)' }}
-                      >
-                        <span className="mono" style={{ width: 22, fontSize: 14, fontWeight: 700, color: 'var(--text-faint-2)' }}>
-                          {i + 1}
-                        </span>
-                        <span style={{ width: 9, height: 9, borderRadius: '50%', background: info.color, flex: 'none' }} />
-                        <span style={{ flex: 1, fontWeight: 800, color: 'var(--ink)', fontSize: 14.5 }}>{p.productName}</span>
-                        <span className="mono" style={{ fontSize: 12.5, color: 'var(--text-soft)', fontWeight: 700, width: 62, textAlign: 'right' }}>
-                          {p.totalQuantity} und
-                        </span>
-                        <span className="mono" style={{ fontSize: 13.5, color: 'var(--ink)', fontWeight: 700, width: 96, textAlign: 'right' }}>
-                          {formatCurrency(p.totalAmount)}
-                        </span>
+                  <div className="ranking">
+                    {report.topProducts.map((p, i) => (
+                      <div key={p.productId} className="ranking__row">
+                        <span className="ranking__pos">{i + 1}</span>
+                        <CategoryIcon category={p.category} size={30} />
+                        <span className="ranking__name">{p.productName}</span>
+                        <span className="ranking__qty">{p.totalQuantity} und</span>
+                        <span className="ranking__total">{formatCurrency(p.totalAmount)}</span>
                       </div>
-                    )
-                  })
+                    ))}
+                  </div>
                 )}
-              </div>
+              </Card>
 
               {/* Métodos de pago */}
-              <div className="card" style={{ padding: '20px 22px' }}>
-                <div style={{ fontSize: 15, fontWeight: 900, color: 'var(--ink)', marginBottom: 14 }}>Por método de pago</div>
-                {METHODS.map((m) => {
-                  const value = Number(report.paymentBreakdown.breakdown[m.value]?.total || 0)
-                  const pct = report.totalAmount > 0 ? (value / Number(report.totalAmount)) * 100 : 0
-                  return (
-                    <div key={m.value} style={{ marginBottom: 16 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 7 }}>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontWeight: 800, color: 'var(--ink)', fontSize: 14.5 }}>
-                          <span style={{ width: 9, height: 9, borderRadius: '50%', background: m.color }} />
-                          {m.label}
-                        </span>
-                        <span className="mono" style={{ fontWeight: 700, color: 'var(--ink)', fontSize: 14 }}>
-                          {formatCurrency(value)}
-                        </span>
+              <Card className="report-card">
+                <h2 className="report-card__title">Por método de pago</h2>
+                <div className="methods">
+                  {METHODS.map((m) => {
+                    const value = Number(report.paymentBreakdown.breakdown[m.value]?.total || 0)
+                    const pct = report.totalAmount > 0 ? (value / Number(report.totalAmount)) * 100 : 0
+                    return (
+                      <div key={m.value} className="methods__row">
+                        <div className="methods__head">
+                          <span className="methods__name">
+                            <span className="methods__dot" style={{ background: m.color }} />
+                            {m.label}
+                          </span>
+                          <span className="methods__value">{formatCurrency(value)}</span>
+                        </div>
+                        <div className="methods__track">
+                          <div className="methods__fill" style={{ width: `${pct}%`, background: m.color }} />
+                        </div>
+                        <div className="methods__pct">{pct.toFixed(1)}% del total</div>
                       </div>
-                      <div style={{ height: 9, borderRadius: 5, background: 'var(--border-soft-2)', overflow: 'hidden' }}>
-                        <div style={{ height: '100%', borderRadius: 5, width: `${pct}%`, background: m.color }} />
-                      </div>
-                      <div className="mono" style={{ fontSize: 11, color: 'var(--text-soft)', fontWeight: 700, marginTop: 5 }}>
-                        {pct.toFixed(1)}% del total
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
+                    )
+                  })}
+                </div>
+              </Card>
             </div>
-          </>
           </div>
         )}
 
         {/* Ventas del periodo — colapsada por defecto, carga perezosa */}
-        <div className="card" style={{ marginTop: 16, overflow: 'hidden' }}>
-          <button
-            onClick={handleToggleOrders}
-            style={{
-              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '16px 22px', background: 'none', border: 'none', cursor: 'pointer',
-              fontSize: 14, fontWeight: 900, color: 'var(--ink)',
-            }}
-          >
-            <span>
+        <Card className="orders-card">
+          <button type="button" className="orders-card__toggle" onClick={handleToggleOrders} aria-expanded={ordersVisible}>
+            <span className="orders-card__title">
               Ventas del periodo
               {ordersTotal > 0
-                ? <span style={{ fontWeight: 700, color: 'var(--text-soft)', marginLeft: 8 }}>({ordersTotal})</span>
-                : report && <span style={{ fontWeight: 700, color: 'var(--text-soft)', marginLeft: 8 }}>({report.totalOrders})</span>
+                ? <span className="orders-card__count">({ordersTotal})</span>
+                : report && <span className="orders-card__count">({report.totalOrders})</span>
               }
             </span>
-            <svg width="18" height="18" style={{ color: 'var(--text-faint)', transform: ordersVisible ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }}>
+            <svg width="20" height="20" aria-hidden="true" className={`orders-card__chevron ${ordersVisible ? 'orders-card__chevron--open' : ''}`}>
               <use href="#ic-down" />
             </svg>
           </button>
 
           {ordersVisible && (
-            <div style={{ borderTop: '1px solid var(--border-soft)', padding: '0 22px 18px' }}>
-              {ordersLoading && !orders && (
-                <p style={{ fontSize: 13, color: 'var(--text-soft)', fontWeight: 700, padding: '14px 0' }}>Cargando...</p>
-              )}
+            <div className="orders-card__body">
+              {ordersLoading && !orders && <p className="reports-page__muted">Cargando...</p>}
               {orders && (
                 <>
-                  <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                  <div className="orders-table-wrap">
+                    <table className="ui-table orders-table">
                       <thead>
-                        <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                          <th style={thStyle}>#</th>
-                          <th style={thStyle}>Fecha</th>
-                          <th style={thStyle}>Mesa</th>
-                          <th style={thStyle}>Cajero</th>
-                          <th style={thStyle}>Método</th>
-                          <th style={{ ...thStyle, textAlign: 'right' }}>Total</th>
-                          <th style={thStyle}></th>
+                        <tr>
+                          <th>#</th>
+                          <th>Fecha</th>
+                          <th>Mesa</th>
+                          <th>Cajero</th>
+                          <th>Método</th>
+                          <th className="ui-table__num">Total</th>
+                          <th aria-label="Acciones"></th>
                         </tr>
                       </thead>
                       <tbody>
@@ -600,56 +511,45 @@ export default function ReportsPage() {
                           const canAnular = !voided && cashRegister && order.cashRegisterId === cashRegister.id
                           return (
                             <Fragment key={order.id}>
-                            <tr
-                              style={{
-                                borderBottom: voided ? 'none' : '1px solid var(--border-soft-2)',
-                                opacity: voided ? 0.5 : 1,
-                              }}
-                            >
-                              <td style={tdStyle} className="mono">
+                            <tr className={voided ? 'orders-table__row--voided' : undefined}>
+                              <td className="ui-num">
                                 {order.id}
-                                {voided && (
-                                  <span style={{ display: 'block', fontSize: 10, fontWeight: 800, color: 'var(--red-text)', letterSpacing: '.04em', textTransform: 'uppercase' }}>
-                                    Anulada
-                                  </span>
-                                )}
+                                {voided && <Chip variant="danger" className="orders-table__badge">Anulada</Chip>}
                               </td>
-                              <td style={tdStyle} className="mono">
+                              <td className="ui-num orders-table__date">
                                 {new Date(order.createdAt).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit' })}{' '}
                                 {new Date(order.createdAt).toLocaleTimeString('es-CO', { hour: 'numeric', minute: '2-digit' })}
                               </td>
-                              <td style={{ ...tdStyle, textDecoration: voided ? 'line-through' : 'none' }}>{order.tableName || '—'}</td>
-                              <td style={{ ...tdStyle, textDecoration: voided ? 'line-through' : 'none' }}>{order.userName}</td>
-                              <td style={tdStyle}>
-                                <span style={{ fontSize: 12, color: 'var(--text-soft)', fontWeight: 700 }}>
-                                  {order.paymentMethod}
-                                </span>
-                              </td>
-                              <td style={{ ...tdStyle, textAlign: 'right', fontWeight: 800, textDecoration: voided ? 'line-through' : 'none' }} className="mono">
-                                {formatCurrency(order.total)}
-                              </td>
-                              <td style={{ ...tdStyle, display: 'flex', gap: 4, alignItems: 'center', justifyContent: 'flex-end' }}>
+                              <td className="orders-table__strike">{order.tableName || '—'}</td>
+                              <td className="orders-table__strike">{order.userName}</td>
+                              <td className="orders-table__method">{order.paymentMethod}</td>
+                              <td className="ui-table__num orders-table__total orders-table__strike">{formatCurrency(order.total)}</td>
+                              <td className="orders-table__actions">
                                 <button
+                                  type="button"
                                   title="Reimprimir recibo"
+                                  aria-label={`Reimprimir recibo de la venta ${order.id}`}
                                   onClick={() => window.open(`#/recibo-venta/${order.id}`, '_blank', 'width=420,height=720')}
-                                  style={iconBtnStyle}
+                                  className="icon-btn"
                                 >
-                                  <svg width="14" height="14"><use href="#ic-print" /></svg>
+                                  <svg width="16" height="16" aria-hidden="true"><use href="#ic-print" /></svg>
                                 </button>
                                 {canAnular && (
                                   <button
+                                    type="button"
                                     title="Anular venta"
+                                    aria-label={`Anular venta ${order.id}`}
                                     onClick={() => openAnularModal(order)}
-                                    style={{ ...iconBtnStyle, color: 'var(--red-text)' }}
+                                    className="icon-btn icon-btn--danger"
                                   >
-                                    <svg width="14" height="14"><use href="#ic-x" /></svg>
+                                    <svg width="15" height="15" aria-hidden="true"><use href="#ic-x" /></svg>
                                   </button>
                                 )}
                               </td>
                             </tr>
                             {voided && (
-                              <tr style={{ borderBottom: '1px solid var(--border-soft-2)' }}>
-                                <td colSpan={7} style={{ padding: '0 8px 7px', fontSize: 11, color: 'var(--text-soft)', fontWeight: 700 }}>
+                              <tr className="orders-table__void-info">
+                                <td colSpan={7}>
                                   Motivo: {order.motivoAnulacion || '—'}
                                   {order.anuladaEn && (
                                     <> · Anulada el{' '}
@@ -668,137 +568,101 @@ export default function ReportsPage() {
                     </table>
                   </div>
                   {ordersHasMore && (
-                    <button
+                    <Button
+                      variant="neutral"
+                      size="sm"
+                      className="orders-card__more"
                       onClick={() => loadOrdersPage(currentFrom, currentTo, ordersPage + 1)}
                       disabled={ordersLoading}
-                      style={{
-                        marginTop: 12, background: 'var(--tile-bg)', border: 'none', padding: '8px 18px',
-                        borderRadius: 9, fontSize: 12, fontWeight: 800, color: 'var(--ink)', cursor: 'pointer',
-                      }}
                     >
                       {ordersLoading ? 'Cargando...' : 'Ver más'}
-                    </button>
+                    </Button>
                   )}
                 </>
               )}
             </div>
           )}
-        </div>
+        </Card>
       </div>
     </div>
 
     {/* Modal de anulación */}
     {anularTarget && (
-      <div style={{
-        position: 'fixed', inset: 0, background: 'rgba(0,0,0,.45)', display: 'flex',
-        alignItems: 'center', justifyContent: 'center', zIndex: 1000,
-      }}>
-        <div style={{ background: '#fff', borderRadius: 18, padding: '28px 32px', width: 420, boxShadow: '0 8px 32px rgba(0,0,0,.18)' }}>
-          <div style={{ fontSize: 17, fontWeight: 900, color: 'var(--ink)', marginBottom: 6 }}>
-            Anular venta #{anularTarget.id}
-          </div>
-          <p style={{ fontSize: 13, color: 'var(--text-soft)', fontWeight: 700, margin: '0 0 18px' }}>
-            {formatCurrency(anularTarget.total)} · {anularTarget.tableName || 'Sin mesa'} · {anularTarget.paymentMethod}
-          </p>
-          <div style={{ padding: '12px 16px', background: '#fef2f2', borderRadius: 10, marginBottom: 18, fontSize: 13, fontWeight: 700, color: '#991b1b' }}>
-            Esta venta no se borrará — quedará marcada como anulada para auditoría. Esta acción no se puede deshacer.
-          </div>
-          <label style={{ display: 'block', fontSize: 12, fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>
-            Motivo de anulación *
-          </label>
-          <textarea
-            value={anularMotivo}
-            onChange={(e) => setAnularMotivo(e.target.value)}
-            placeholder="Ej: Se cobró por error, cliente no recibió el producto..."
-            rows={3}
-            style={{
-              width: '100%', padding: '10px 12px', border: '1px solid var(--border)', borderRadius: 10,
-              fontSize: 13, fontWeight: 700, color: 'var(--ink)', resize: 'vertical', boxSizing: 'border-box',
-            }}
-          />
-          <label style={{ display: 'block', fontSize: 12, fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.04em', margin: '14px 0 6px' }}>
-            Contraseña de administrador *
-          </label>
-          <input
-            type="password"
-            value={anularPassword}
-            onChange={(e) => setAnularPassword(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') handleAnular() }}
-            autoComplete="off"
-            style={{
-              width: '100%', padding: '10px 12px', border: '1px solid var(--border)', borderRadius: 10,
-              fontSize: 13, fontWeight: 700, color: 'var(--ink)', boxSizing: 'border-box',
-            }}
-          />
-          {anularError && <p style={{ color: 'var(--red-text)', fontSize: 13, marginTop: 8 }}>{anularError}</p>}
-          <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
-            <button
-              onClick={() => setAnularTarget(null)}
-              style={{ flex: 1, padding: '11px', borderRadius: 10, border: '1px solid var(--border)', background: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer' }}
-            >
+      <Modal
+        title={`Anular venta #${anularTarget.id}`}
+        subtitle={`${formatCurrency(anularTarget.total)} · ${anularTarget.tableName || 'Sin mesa'} · ${anularTarget.paymentMethod}`}
+        closeButton
+        width={460}
+        onClose={() => setAnularTarget(null)}
+        dismissible={!anularLoading}
+        initialFocusRef={anularMotivoRef}
+        footer={(
+          <>
+            <Button variant="neutral" onClick={() => setAnularTarget(null)} disabled={anularLoading}>
               Cancelar
-            </button>
-            <button
-              onClick={handleAnular}
-              disabled={!canConfirmAnular}
-              style={{
-                flex: 1, padding: '11px', borderRadius: 10, border: 'none', fontSize: 14, fontWeight: 800,
-                cursor: canConfirmAnular ? 'pointer' : 'not-allowed',
-                background: canConfirmAnular ? '#dc2626' : 'var(--border)',
-                color: canConfirmAnular ? '#fff' : 'var(--text-faint)',
-              }}
-            >
+            </Button>
+            <Button variant="danger" onClick={handleAnular} disabled={!canConfirmAnular} aria-busy={anularLoading}>
               {anularLoading ? 'Anulando...' : 'Confirmar anulación'}
-            </button>
-          </div>
+            </Button>
+          </>
+        )}
+      >
+        <div className="void-form">
+          <Notice variant="danger">
+            Esta venta no se borrará — quedará marcada como anulada para auditoría. Esta acción no se puede deshacer.
+          </Notice>
+          <Field label="Motivo de anulación *">
+            <textarea
+              ref={anularMotivoRef}
+              className="ui-input"
+              value={anularMotivo}
+              onChange={(e) => setAnularMotivo(e.target.value)}
+              placeholder="Ej: Se cobró por error, cliente no recibió el producto..."
+              rows={3}
+            />
+          </Field>
+          <Field label="Contraseña de administrador *">
+            <Input
+              type="password"
+              value={anularPassword}
+              onChange={(e) => setAnularPassword(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleAnular() }}
+              autoComplete="off"
+            />
+          </Field>
+          {anularError && <Notice variant="danger">{anularError}</Notice>}
         </div>
-      </div>
+      </Modal>
     )}
 
     {/* Aviso: falta configurar la contraseña de administrador */}
     {showPasswordNotice && (
-      <div style={{
-        position: 'fixed', inset: 0, background: 'rgba(0,0,0,.45)', display: 'flex',
-        alignItems: 'center', justifyContent: 'center', zIndex: 1000,
-      }}>
-        <div style={{ background: '#fff', borderRadius: 18, padding: '28px 32px', width: 420, boxShadow: '0 8px 32px rgba(0,0,0,.18)' }}>
-          <div style={{ fontSize: 17, fontWeight: 900, color: 'var(--ink)', marginBottom: 8 }}>
-            Falta la contraseña de administrador
-          </div>
-          <p style={{ fontSize: 13, color: 'var(--text-soft)', fontWeight: 700, margin: '0 0 18px' }}>
-            Para anular ventas primero configura la contraseña de administrador en Configuración.
-          </p>
-          <div style={{ display: 'flex', gap: 10 }}>
-            <button
-              onClick={() => setShowPasswordNotice(false)}
-              style={{ flex: 1, padding: '11px', borderRadius: 10, border: '1px solid var(--border)', background: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer' }}
-            >
-              Cerrar
-            </button>
-            <button onClick={() => navigate('/configuracion')} className="btn-ink" style={{ flex: 1, padding: '11px', fontSize: 14 }}>
-              Ir a Configuración
-            </button>
-          </div>
-        </div>
-      </div>
+      <Modal
+        title="Falta la contraseña de administrador"
+        closeButton
+        width={440}
+        onClose={() => setShowPasswordNotice(false)}
+        footer={(
+          <>
+            <Button variant="neutral" onClick={() => setShowPasswordNotice(false)}>Cerrar</Button>
+            <Button onClick={() => navigate('/configuracion')}>Ir a Configuración</Button>
+          </>
+        )}
+      >
+        <p className="reports-page__muted">
+          Para anular ventas primero configura la contraseña de administrador en Configuración.
+        </p>
+      </Modal>
     )}
     </>
   )
 }
 
-const thStyle = { padding: '6px 8px', textAlign: 'left', fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.04em', fontSize: 10 }
-const tdStyle = { padding: '7px 8px', color: 'var(--ink)', fontSize: 12 }
-const iconBtnStyle = { background: 'var(--tile-bg)', border: 'none', width: 28, height: 28, borderRadius: 7, display: 'grid', placeItems: 'center', cursor: 'pointer', color: 'var(--ink)' }
-
 function KpiCard({ label, value, accent }) {
   return (
-    <div className="card" style={{ padding: '18px 20px', background: accent ? 'var(--ink)' : '#fff' }}>
-      <div style={{ fontSize: 12, fontWeight: 800, color: accent ? '#bdb2a3' : 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.04em' }}>
-        {label}
-      </div>
-      <div className="mono" style={{ fontSize: 22, fontWeight: 700, color: accent ? '#fff' : 'var(--ink)', marginTop: 6 }}>
-        {value != null ? formatCurrency(value) : '—'}
-      </div>
-    </div>
+    <Card className={`kpi-card ${accent ? 'kpi-card--accent' : ''}`}>
+      <div className="report-label">{label}</div>
+      <div className="kpi-card__value">{value != null ? formatCurrency(value) : '—'}</div>
+    </Card>
   )
 }

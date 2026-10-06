@@ -163,3 +163,27 @@ Decisión de Gabs: para las categorías conocidas se usan los colores del diseñ
 - Sin cambios de lógica: abrir turno, gastos (agregar y eliminar), esperado en caja, resumen por método, cerrar turno y abrir el comprobante funcionan igual, con los mismos textos.
 - 1366×768, 1600×900 y 1920×1080: sin scroll horizontal ni montos cortados. Con turno abierto y sin gastos, Turno cabe sin scroll vertical a 1366×768.
 - Capturas: `capturas-spec12/turno-1366x768.png` y `capturas-spec12/cuadre-de-caja-1366x768.png`.
+
+## Paso 8: Decisiones de Gabs, Space Mono local y Reportes (Parte 2, punto 6)
+
+- **Logo:** la barra superior usa siempre el logo fijo de Neveo. El logo subido en Configuración queda solo para los recibos y su vista previa.
+- **Space Mono local, solo en los recibos:**
+  - Se usan los mismos `woff2` que servía Google Fonts (v17, 400/700, latin y latin-ext), con su licencia OFL. Se quitó Google Fonts de `index.html`.
+  - Los recibos usan la clase nueva `.receipt-mono`. `.mono` en las demás pantallas pasa a DM Sans tabular, y los ejes de las gráficas de Reportes y Análisis también.
+  - Geometría del recibo (venta y turno) medida antes y después, sin acceso a Google: 0 diferencias en los 100 elementos.
+  - Ninguna otra pantalla carga Space Mono.
+- **Reportes** (`pages/ReportsPage.jsx` + `ReportsPage.css`), con los componentes base:
+  - Solo cambió el render; carga, caché, paginación, anulación y refresco quedan igual.
+  - Tarjetas blancas, títulos en Fraunces, cifras tabulares y gráficas en violeta con `utils/chartGeometry.js`.
+  - Selector de periodo segmentado y ranking con el círculo de categoría.
+  - "Ventas del periodo" en `.ui-table`, con Reimprimir (impresora) y Anular como botones de ícono.
+  - Filas anuladas tachadas, con chip "Anulada" y el detalle (motivo, fecha/hora, cajero) debajo.
+  - El modal de anulación y el aviso de contraseña usan el `Modal` base.
+  - El modal de anulación ahora también se cierra con Escape, clic fuera o "×" (salvo mientras anula). Antes solo se cerraba con Cancelar.
+- **Verificado (Playwright por DOM y red, base de prueba):**
+  - "Ventas del periodo" colapsada y sin carga al entrar. Al expandir pide `page=0&size=20`; al colapsar y expandir usa la caché. "Ver más" pide `page=1` (40 filas). Cambiar el rango invalida la caché.
+  - La impresora aparece en todas las filas y abre el recibo. Anular aparece solo en las ventas no anuladas del turno actual.
+  - Modal de anulación: foco en el motivo y contraseña `type=password`. Con una contraseña incorrecta, el error sale dentro del modal, el modal sigue abierto y el campo se vacía.
+  - Al anular: fila tachada con chip y detalle. "Cuadre actual" baja exactamente el valor de la venta. KPIs, gráfica mensual y resumen se vuelven a pedir sin recargar la página.
+  - Sin contraseña configurada (respuesta simulada): aparece el aviso, y "Ir a Configuración" lleva a Configuración.
+  - Sin scroll horizontal ni cifras cortadas a 1366×768, 1600×900 y 1920×1080. Sin errores de JavaScript. `npm run build` limpio; lint sin problemas nuevos.
