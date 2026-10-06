@@ -5,10 +5,13 @@ import { getTable, getTablePendingItems, addProductToTable, removeProductFromTab
 import { createOrder } from '../api/orders'
 import { useSession } from '../context/SessionContext'
 import { formatCurrency } from '../utils/format'
-import { categoryInfo } from '../utils/categoryColors'
+import { categoryInfo, normalizeCategory, uniqueCategories } from '../utils/categoryColors'
+import { Button, Card, Chip, Notice } from '../components/ui'
+import CategoryIcon from '../components/CategoryIcon'
 import QuantityModal from '../components/QuantityModal'
 import ConfirmationModal from '../components/ConfirmationModal'
 import PaymentModal from '../components/PaymentModal'
+import './TableDetailPage.css'
 
 export default function TableDetailPage() {
   const { user, cashRegister } = useSession()
@@ -65,13 +68,14 @@ export default function TableDetailPage() {
     }).catch((err) => setError(err.message))
   }, [cashRegister, navigate, tableId])
 
-  const categories = useMemo(() => {
-    const unique = [...new Set(products.map((p) => p.category).filter(Boolean))]
-    return ['Todos', ...unique]
-  }, [products])
+  // Categorias sin duplicados por mayusculas, tildes o espacios ("Acaí" = "acai").
+  // activeCategory guarda la clave normalizada, o 'Todos'.
+  const categories = useMemo(() => uniqueCategories(products), [products])
 
   const visibleProducts =
-    activeCategory === 'Todos' ? products : products.filter((p) => p.category === activeCategory)
+    activeCategory === 'Todos'
+      ? products
+      : products.filter((p) => normalizeCategory(p.category) === activeCategory)
 
   function openQuantityModal(product) {
     if (!product.available) return
@@ -208,162 +212,151 @@ export default function TableDetailPage() {
 
   if (!cashRegister || !table) return null
 
+  const units = cart.reduce((sum, i) => sum + i.quantity, 0)
+
   return (
-    <div style={{ position: 'absolute', inset: 0, display: 'flex' }}>
-      <section style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', padding: '20px 22px 0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+    <div className="table-detail">
+      <nav className="category-rail" aria-label="Categorías">
+        <button
+          type="button"
+          className={`category-rail__item ${activeCategory === 'Todos' ? 'category-rail__item--active' : ''}`}
+          onClick={() => setActiveCategory('Todos')}
+        >
+          <span className="category-rail__all">
+            <svg width="24" height="24" aria-hidden="true"><use href="#cat-todos" /></svg>
+          </span>
+          <span className="category-rail__label">Todos</span>
+        </button>
+        {categories.map((category) => (
           <button
-            onClick={() => navigate('/mesas')}
-            style={{ background: '#fff', border: '1px solid var(--border-strong)', color: '#5c554c', fontSize: 12, fontWeight: 800, padding: '8px 13px', borderRadius: 10 }}
+            key={category.key}
+            type="button"
+            className={`category-rail__item ${activeCategory === category.key ? 'category-rail__item--active' : ''}`}
+            onClick={() => setActiveCategory(category.key)}
           >
-            ← Mesas
+            <CategoryIcon category={category.label} size={44} />
+            <span className="category-rail__label">{categoryInfo(category.label).short}</span>
           </button>
-          <h1 style={{ fontSize: 21, fontWeight: 900, margin: 0, color: 'var(--ink)' }}>{table.name}</h1>
+        ))}
+      </nav>
+
+      <section className="catalog">
+        <div className="catalog__header">
+          <Button variant="neutral" size="sm" className="catalog__back" onClick={() => navigate('/mesas')}>
+            <svg width="18" height="18" aria-hidden="true"><use href="#ic-back" /></svg>
+            Mesas
+          </Button>
+          <h1 className="catalog__title">{table.name}</h1>
           {Number(table.pendingTotal) > 0 && (
-            <span style={{ background: 'var(--red-bg)', color: 'var(--red-text)', fontSize: 12, fontWeight: 800, padding: '5px 11px', borderRadius: 9 }}>
-              Debe {formatCurrency(table.pendingTotal)}
-            </span>
+            <Chip variant="warning">Debe {formatCurrency(table.pendingTotal)}</Chip>
           )}
         </div>
 
-        {error && <p style={{ color: 'var(--red-text)', fontSize: 13 }}>{error}</p>}
+        {error && <Notice variant="danger">{error}</Notice>}
 
-        <div style={{ display: 'flex', gap: 9, overflowX: 'auto', paddingBottom: 14, flex: 'none' }}>
-          {categories.map((category) => {
-            const info = category === 'Todos' ? null : categoryInfo(category)
-            const active = activeCategory === category
-            return (
-              <button
-                key={category}
-                onClick={() => setActiveCategory(category)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 7,
-                  whiteSpace: 'nowrap',
-                  flex: 'none',
-                  padding: '10px 16px',
-                  borderRadius: 12,
-                  fontSize: 14,
-                  fontWeight: 800,
-                  border: active ? 'none' : '1px solid var(--border)',
-                  background: active ? 'var(--ink)' : 'var(--surface)',
-                  color: active ? '#fff' : 'var(--text-muted)',
-                }}
-              >
-                {info && (
-                  <svg width="19" height="19" style={{ color: active ? '#fff' : info.color }}>
-                    <use href={`#cat-${info.icon}`} />
-                  </svg>
-                )}
-                {category}
-              </button>
-            )
-          })}
-        </div>
-
-        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '4px 4px 24px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(176px, 1fr))', gap: 14 }}>
+        <div className="catalog__grid-wrap">
+          <div className="catalog__grid">
             {visibleProducts.map((product) => {
               const inCart = cart.find((i) => i.product.id === product.id)
               const info = categoryInfo(product.category)
               return (
-                <button
+                <Card
+                  as="button"
+                  type="button"
                   key={product.id}
+                  className="product-card"
                   disabled={!product.available}
                   onClick={() => openQuantityModal(product)}
-                  className="card"
-                  style={{
-                    textAlign: 'left',
-                    padding: 15,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 11,
-                    minHeight: 128,
-                    opacity: product.available ? 1 : 0.5,
-                    border: inCart ? `2px solid ${info.color}` : '1px solid var(--border)',
-                  }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 10.5, fontWeight: 800, letterSpacing: '.04em', textTransform: 'uppercase', color: info.color }}>
-                      <svg width="15" height="15"><use href={`#cat-${info.icon}`} /></svg>
-                      {info.short}
+                  <div className="product-card__top">
+                    <span className="product-card__icon">
+                      <CategoryIcon category={product.category} size={48} />
+                      {inCart && <span className="product-card__qty">×{inCart.quantity}</span>}
                     </span>
-                    <span style={{ width: 26, height: 26, borderRadius: 8, background: 'var(--tile-bg)', color: 'var(--ink)', display: 'grid', placeItems: 'center' }}>
-                      {product.available ? <svg width="15" height="15"><use href="#ic-plus" /></svg> : <span style={{ fontSize: 9, fontWeight: 800 }}>—</span>}
+                    <span className="product-card__text">
+                      <span className="product-card__category">{info.short}</span>
+                      <span className="product-card__name">{product.name}</span>
                     </span>
                   </div>
-                  <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--ink)', lineHeight: 1.2, marginTop: 'auto' }}>{product.name}</div>
-                  <div className="mono" style={{ fontSize: 15, fontWeight: 700, color: product.available ? 'var(--ink)' : 'var(--text-faint)' }}>
-                    {product.available ? formatCurrency(product.price) : 'Agotado'}
+                  <div className="product-card__bottom">
+                    <span className={`product-card__price ${product.available ? '' : 'product-card__price--out'}`}>
+                      {product.available ? formatCurrency(product.price) : 'Agotado'}
+                    </span>
+                    <span className="product-card__add" aria-hidden="true">
+                      {product.available
+                        ? <svg width="20" height="20"><use href="#ic-plus" /></svg>
+                        : <svg width="20" height="20"><use href="#ic-minus" /></svg>}
+                    </span>
                   </div>
-                </button>
+                </Card>
               )
             })}
           </div>
         </div>
       </section>
 
-      <aside style={{ flex: 'none', width: 380, background: 'var(--surface)', borderLeft: '1px solid #E9E1D5', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ padding: '18px 20px 14px', borderBottom: '1px solid var(--border-soft)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ fontSize: 17, fontWeight: 900, color: 'var(--ink)' }}>Pedido actual</div>
-          {cart.length > 0 && (
-            <button onClick={clearCart} style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-soft-2)', fontSize: 12, fontWeight: 800, padding: '8px 12px', borderRadius: 9 }}>
-              Vaciar
-            </button>
-          )}
-        </div>
-
-        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '8px 14px' }}>
-          {cart.length === 0 ? (
-            <p style={{ color: 'var(--text-soft)', fontSize: 14, padding: '20px 8px' }}>Toca un producto para agregarlo</p>
-          ) : (
-            cart.map((item) => {
-              const info = categoryInfo(item.product.category)
-              return (
-                <div key={item.product.id} style={{ display: 'flex', gap: 11, alignItems: 'center', padding: '12px 8px', borderBottom: '1px solid var(--border-soft-2)' }}>
-                  <span style={{ width: 10, height: 10, borderRadius: '50%', flex: 'none', background: info.color }} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14.5, fontWeight: 800, color: 'var(--ink)', lineHeight: 1.2 }}>{item.product.name}</div>
-                    <div className="mono" style={{ fontSize: 11.5, color: 'var(--text-soft)', fontWeight: 700, marginTop: 2 }}>
-                      {formatCurrency(item.product.price)} c/u
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 7, flex: 'none' }}>
-                    <button onClick={() => changeQuantity(item.product.id, -1)} style={{ width: 28, height: 28, borderRadius: 8, background: 'var(--tile-bg)', color: 'var(--ink)', display: 'grid', placeItems: 'center', fontSize: 18, fontWeight: 800 }}>−</button>
-                    <span style={{ minWidth: 18, textAlign: 'center', fontWeight: 800, fontSize: 15 }}>{item.quantity}</span>
-                    <button onClick={() => changeQuantity(item.product.id, 1)} style={{ width: 28, height: 28, borderRadius: 8, background: 'var(--ink)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 18, fontWeight: 800 }}>+</button>
-                  </div>
-                  <button onClick={() => removeFromCart(item.product.id)} aria-label="Quitar" style={{ width: 22, height: 22, borderRadius: 6, background: 'transparent', color: 'var(--text-faint)', display: 'grid', placeItems: 'center', flex: 'none' }}>
-                    <svg width="13" height="13"><use href="#ic-x" /></svg>
-                  </button>
-                </div>
-              )
-            })
-          )}
-        </div>
-
-        <div style={{ flex: 'none', padding: '16px 20px 18px', borderTop: '1px solid #E9E1D5', background: 'var(--surface-3)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 14 }}>
-            <span style={{ fontSize: 16, fontWeight: 900, color: 'var(--ink)' }}>Total pedido</span>
-            <span className="mono" style={{ fontSize: 24, fontWeight: 700, color: 'var(--accent)' }}>{formatCurrency(subtotal)}</span>
+      <aside className="order-panel">
+        <div className="order-panel__header">
+          <div>
+            <h2 className="order-panel__title">Pedido actual</h2>
+            <div className="order-panel__subtitle">
+              {table.name} · {units} {units === 1 ? 'producto' : 'productos'}
+            </div>
           </div>
-          <button
-            disabled={cart.length === 0}
-            onClick={startPayFlow}
-            className="btn-ink"
-            style={{ width: '100%', fontSize: 17, padding: 16 }}
-          >
+          {cart.length > 0 && (
+            <Button variant="danger-text" onClick={clearCart}>Vaciar</Button>
+          )}
+        </div>
+
+        <div className="order-panel__items">
+          {cart.length === 0 ? (
+            <p className="order-panel__empty">Toca un producto para agregarlo</p>
+          ) : (
+            cart.map((item) => (
+              <div key={item.product.id} className="order-item">
+                <div className="order-item__main">
+                  <CategoryIcon category={item.product.category} size={40} />
+                  <div className="order-item__text">
+                    <span className="order-item__name">{item.product.name}</span>
+                    <span className="order-item__unit">{formatCurrency(item.product.price)} c/u</span>
+                  </div>
+                  <span className="order-item__total">{formatCurrency(item.product.price * item.quantity)}</span>
+                </div>
+                <div className="order-item__actions">
+                  <div className="qty-stepper">
+                    <button type="button" className="qty-stepper__btn" onClick={() => changeQuantity(item.product.id, -1)} aria-label={`Restar uno a ${item.product.name}`}>
+                      <svg width="16" height="16" aria-hidden="true"><use href="#ic-minus" /></svg>
+                    </button>
+                    <span className="qty-stepper__value">{item.quantity}</span>
+                    <button type="button" className="qty-stepper__btn" onClick={() => changeQuantity(item.product.id, 1)} aria-label={`Sumar uno a ${item.product.name}`}>
+                      <svg width="16" height="16" aria-hidden="true"><use href="#ic-plus" /></svg>
+                    </button>
+                  </div>
+                  <Button variant="danger-text" onClick={() => removeFromCart(item.product.id)}>
+                    <svg width="14" height="14" aria-hidden="true"><use href="#ic-x" /></svg>
+                    Quitar
+                  </Button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className="order-panel__footer">
+          <div className="order-panel__total">
+            <span className="order-panel__total-label">Total pedido</span>
+            <span className="order-panel__total-value">{formatCurrency(subtotal)}</span>
+          </div>
+          <Button size="lg" block disabled={cart.length === 0} onClick={startPayFlow}>
             Cobrar este pedido
-          </button>
-          <button
-            disabled={cart.length === 0 || saving}
-            onClick={handleLeaveOnAccount}
-            className="btn-outline"
-            style={{ width: '100%', fontSize: 14, padding: 11, marginTop: 10 }}
-          >
+          </Button>
+          <Button variant="secondary" block disabled={cart.length === 0 || saving} onClick={handleLeaveOnAccount}>
             {saving ? 'Guardando...' : 'Dejar en la cuenta'}
-          </button>
+          </Button>
+          <div className="order-panel__note">
+            <svg width="14" height="14" aria-hidden="true"><use href="#ic-check" /></svg>
+            Cada producto se guarda al tocarlo
+          </div>
         </div>
       </aside>
 

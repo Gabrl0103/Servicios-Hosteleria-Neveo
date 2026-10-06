@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getProducts, createProduct, updateProduct, setProductAvailability, deleteProduct } from '../api/products'
 import { formatCurrency } from '../utils/format'
-import { categoryInfo } from '../utils/categoryColors'
+import { categoryInfo, normalizeCategory, uniqueCategories } from '../utils/categoryColors'
 
 const EMPTY_FORM = { id: null, name: '', category: '', price: '' }
 
@@ -72,13 +72,17 @@ export default function ProductsPage() {
 
   useEffect(load, [])
 
-  const categories = useMemo(() => {
-    const unique = [...new Set(products.map((p) => p.category).filter(Boolean))]
-    return ['Todos', ...unique]
-  }, [products])
+  // Categorias sin duplicados por mayusculas, tildes o espacios ("Acaí" = "acai").
+  // activeCategory guarda la clave normalizada, o 'Todos'.
+  const categories = useMemo(
+    () => [{ key: 'Todos', label: 'Todos' }, ...uniqueCategories(products)],
+    [products],
+  )
 
   const visibleProducts =
-    activeCategory === 'Todos' ? products : products.filter((p) => p.category === activeCategory)
+    activeCategory === 'Todos'
+      ? products
+      : products.filter((p) => normalizeCategory(p.category) === activeCategory)
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -127,12 +131,12 @@ export default function ProductsPage() {
 
         <div style={{ display: 'flex', gap: 9, overflowX: 'auto', paddingBottom: 16 }}>
           {categories.map((category) => {
-            const info = category === 'Todos' ? null : categoryInfo(category)
-            const active = activeCategory === category
+            const info = category.key === 'Todos' ? null : categoryInfo(category.label)
+            const active = activeCategory === category.key
             return (
               <button
-                key={category}
-                onClick={() => setActiveCategory(category)}
+                key={category.key}
+                onClick={() => setActiveCategory(category.key)}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -153,7 +157,7 @@ export default function ProductsPage() {
                     <use href={`#cat-${info.icon}`} />
                   </svg>
                 )}
-                {category}
+                {category.label}
               </button>
             )
           })}

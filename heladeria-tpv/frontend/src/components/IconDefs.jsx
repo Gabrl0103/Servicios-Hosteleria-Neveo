@@ -8,22 +8,6 @@ export default function IconDefs() {
           <path d="M8 9a4 4 0 0 1 8 0" />
           <path d="M7 10l5 11 5-11" />
         </symbol>
-        <symbol id="cat-acai" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M4 11h16" />
-          <path d="M5 11a7 7 0 0 0 14 0" />
-          <path d="M10 7c0 1.5 1.5 2 4 1" />
-        </symbol>
-        <symbol id="cat-cafe" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M5 9h11v4a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V9z" />
-          <path d="M16 10h2a2 2 0 0 1 0 4h-2" />
-          <path d="M8 3v2M11 3v2" />
-        </symbol>
-        <symbol id="cat-cookies" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="8" />
-          <circle cx="9.5" cy="10" r="1" />
-          <circle cx="14" cy="9.5" r="1" />
-          <circle cx="13" cy="14" r="1" />
-        </symbol>
         <symbol id="cat-mitimiti" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="12" r="8" />
           <path d="M12 4v16" />
@@ -36,11 +20,35 @@ export default function IconDefs() {
         <symbol id="cat-salsas" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M12 3c3 5 5 7 5 10a5 5 0 0 1-10 0c0-3 2-5 5-10z" />
         </symbol>
-        <symbol id="cat-toppings" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-          <path d="M6 15l3-3" />
-          <path d="M11 17l3-3" />
-          <path d="M14 9l3-3" />
-          <path d="M8 8l2-2" />
+        {/* Simbolos de categoria de design/A-Detalle.dc.html (trazo 1.8). */}
+        <symbol id="cat-acai" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3.5 12.5h17a8.5 7.5 0 0 1-17 0z M6.8 9a1.2 1.2 0 1 0 2.4 0a1.2 1.2 0 1 0-2.4 0 M10.8 6.3a1.2 1.2 0 1 0 2.4 0a1.2 1.2 0 1 0-2.4 0 M14.8 9a1.2 1.2 0 1 0 2.4 0a1.2 1.2 0 1 0-2.4 0" />
+        </symbol>
+        <symbol id="cat-mix" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M6.5 11h11l-1.8 8.5H8.3z M8 11a4 4 0 0 1 8 0 M11 4.3a1 1 0 1 0 2 0a1 1 0 1 0-2 0 M12 19.5V21.5 M9.5 21.5h5" />
+        </symbol>
+        <symbol id="cat-yogurt" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M6.5 20.5h11l.9-5H5.6z M7 15.5c-1.2-.4-1.4-2.9.6-3.2h8.8c2 .3 1.8 2.8.6 3.2 M9 12.3c-.9-.7-.6-2.5 1-2.8h4c1.6.3 1.9 2.1 1 2.8 M10.6 9.5c.2-1.6.9-2.7 1.4-4 .5 1.3 1.2 2.4 1.4 4" />
+        </symbol>
+        <symbol id="cat-cookies" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0 M8 9a1 1 0 1 0 2 0a1 1 0 1 0-2 0 M14 10a1 1 0 1 0 2 0a1 1 0 1 0-2 0 M9 15a1 1 0 1 0 2 0a1 1 0 1 0-2 0 M14.5 15.5a1 1 0 1 0 2 0a1 1 0 1 0-2 0" />
+        </symbol>
+        <symbol id="cat-cafe" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5 9h11v4.5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5z M16 10.5h1.5a2.5 2.5 0 0 1 0 5H16 M8 3.5v2.5 M12 3.5v2.5 M4 21h13" />
+        </symbol>
+        <symbol id="cat-toppings" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M6 7.5l2.2 1.2 M14 4.8l.8 2.4 M18.5 10l-2.3.9 M6.5 14.5l1.4 2 M12 12l2.4 1.1 M10 19l.6-2.4 M17 17.5l2 1.4 M4.5 11l.4 2.4" />
+        </symbol>
+        <symbol id="cat-oblea" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5.5 3.5h13A1.5 1.5 0 0 1 20 5v14a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19V5a1.5 1.5 0 0 1 1.5-1.5z M4 9.2h16 M4 14.8h16 M9.7 3.5v17 M14.3 3.5v17" />
+        </symbol>
+        {/* Respaldo para categorias sin simbolo propio (derivado, no viene en el diseño). */}
+        <symbol id="cat-generico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3.5 12.2V5A1.5 1.5 0 0 1 5 3.5h7.2l8.3 8.3a1.5 1.5 0 0 1 0 2.1l-6.4 6.4a1.5 1.5 0 0 1-2.1 0z M7.6 8a.9.9 0 1 0 1.8 0a.9.9 0 1 0-1.8 0" />
+        </symbol>
+        {/* "Todos" del riel de categorias. */}
+        <symbol id="cat-todos" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 4h6.5v6.5H4z M13.5 4H20v6.5h-6.5z M4 13.5h6.5V20H4z M13.5 13.5H20V20h-6.5z" />
         </symbol>
         <symbol id="ic-cart" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="9" cy="20" r="1.4" />
@@ -91,6 +99,15 @@ export default function IconDefs() {
         <symbol id="ic-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="12" r="3" />
           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1.08 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1.08z" />
+        </symbol>
+        <symbol id="ic-minus" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+          <path d="M5 12h14" />
+        </symbol>
+        <symbol id="ic-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M15 5l-7 7 7 7" />
+        </symbol>
+        <symbol id="ic-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5 12.5l4.5 4.5L19 7.5" />
         </symbol>
       </defs>
     </svg>

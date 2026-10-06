@@ -71,3 +71,46 @@ Los dos `.dc.html` no se abren solos: dependen de `support.js` (no incluido), de
   - Sin errores de JavaScript ni peticiones fallidas.
 - Punto de alerta de Análisis: con `scripts/seed-insights-test.py --today low` sobre una copia de la base de prueba (en la carpeta temporal, no en AppData) `/api/insights` devuelve 2 alertas (`LOW_SALES_TODAY`, `PRODUCT_DROP`) y el punto ámbar se ve junto a "Análisis" (8×8, `#E8A33D`, título "2 alerta(s)").
 - Capturas: `capturas-spec12/mesas-1366x768.png`, `capturas-spec12/mesas-cuenta-guardada-1366x768.png` y `capturas-spec12/navbar-alerta-analisis.png`.
+
+## Paso 5: Detalle de mesa (Parte 2, punto 3) y Parte 3 (símbolo y color por categoría)
+
+Decisión de Gabs: para las categorías conocidas se usan los colores del diseño (no los del mapa anterior de `categoryColors.js`).
+
+### Detalle de mesa
+- `pages/TableDetailPage.jsx` + `TableDetailPage.css`, según `design/A-Detalle.dc.html`:
+  - Riel oscuro de 92 px con "Todos" y las categorías (círculo con símbolo y etiqueta). Con muchas categorías, el riel se desplaza con una barra fina.
+  - Encabezado: "← Mesas", nombre de la mesa en Fraunces 34 y chip "Debe $ X".
+  - Tarjetas de producto de 160 px: círculo de categoría, burbuja "×N" si ya está en el pedido, categoría, nombre en Fraunces, precio y "+". Las agotadas quedan deshabilitadas, con "Agotado" y "−".
+  - Cuadrícula de 4 columnas a 1366, 5 a 1600 y 6 a 1920.
+  - Panel "Pedido actual" de 372 px: subtítulo "Mesa · N productos", "Vaciar", ítems con −/cantidad/+, total de línea y "Quitar". Debajo, el total, "Cobrar este pedido" (principal), "Dejar en la cuenta" (secundario) y la nota "Cada producto se guarda al tocarlo".
+- Componentes base: `Button`, `Card` (tarjeta de producto), `Chip` ("Debe"), `Notice` (errores) y el nuevo `CategoryIcon` (círculo de categoría reutilizable).
+- **Sin cambios de lógica.** Tocar un producto sigue abriendo el modal de cantidad. Agregar, +/−, quitar, vaciar, "Dejar en la cuenta" (espera los guardados en curso) y el cobro quedan igual. Los modales de cantidad, confirmación y pago no se tocaron: se rediseñan en el paso siguiente.
+- **No implementado (función nueva, fuera de "solo capa visual"):**
+  - El buscador "Buscar producto" del diseño.
+  - El chip "Guardado": se mantiene el chip existente "Debe $ X", con color de alerta.
+
+### Parte 3
+- `utils/categoryColors.js`:
+  - `normalizeCategory` (sin mayúsculas, tildes ni espacios sobrantes: "Açaí" = "Acaí" = " ACAI " = "acai").
+  - Mapa con los 7 pares símbolo/fondo del diseño (Açaí, Mix, Yogurt Helado, Cookies, Café, Toppings, Oblea).
+  - Color estable para el resto: hash del nombre normalizado dentro de esos 7 pares. Lo usan las categorías nuevas y también Helados, Miti-miti, Fruta y Salsas, que conservan su símbolo.
+  - `uniqueCategories` para listar sin duplicados. `categoryInfo` mantiene `color`/`icon`/`short` y agrega `bg`, así que los consumidores existentes (modales, Reportes) siguen funcionando.
+- `components/IconDefs.jsx`:
+  - Se agregan `cat-mix`, `cat-yogurt`, `cat-oblea`, `cat-generico` (etiqueta, derivado: no viene en el diseño) y `cat-todos`.
+  - `cat-acai`, `cat-cafe`, `cat-cookies` y `cat-toppings` pasan a los trazos del diseño, como pide el spec.
+  - Íconos auxiliares nuevos: `ic-minus`, `ic-back` y `ic-check`.
+- Chips normalizados en `TableDetailPage` (riel) y `ProductsPage` (fila de chips). En `ProductsPage` solo cambió la deduplicación y el filtro, no el estilo. Ahí el chip muestra el nombre del primer producto de la categoría (ej. "ACAI"); en el riel se muestra la etiqueta canónica ("Açaí").
+- Limitación: con solo 7 colores, dos categorías sin color fijo pueden coincidir en color con otra (ej. "POSTRES" usa el par de Café). El símbolo genérico las distingue.
+
+### Verificación (Playwright, backend sirviendo `frontend/dist`, copia de prueba de la base, nunca AppData)
+- Productos de prueba con categorías escritas distinto ("ACAI", "Açaí", "acaí"; "Yogurt Helado", "yogurt helado "; "Mix", "mix"). El riel muestra una sola de cada una, y los filtros Açaí y Yogurt Helado muestran sus 3 productos.
+- En una mesa vacía:
+  - Tocar 3 productos: cada uno queda guardado en el backend al momento.
+  - "+" en Acai: queda ×2 en el backend.
+  - "−" con cantidad 1: se quita.
+  - "Quitar": se quita en el backend.
+  - Burbujas ×2/×1 correctas; producto agotado deshabilitado.
+- "Dejar en la cuenta": vuelve a Mesas con "Cuenta guardada: $ 49.000" y la mesa ocupada. Al volver a entrar, el pedido se restaura igual (Acai 9oz ×2, Frozen 9oz ×1, Americano ×1; $ 49.000).
+- 1366×768, 1600×900 y 1920×1080: sin scroll horizontal ni textos cortados. Sin errores de JavaScript.
+- `npm run build` limpio. Lint: los mismos 5 problemas anteriores, ninguno nuevo.
+- Capturas: `capturas-spec12/detalle-mesa-1366x768.png` y `capturas-spec12/detalle-mesa-reingreso-1366x768.png`.
