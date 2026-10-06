@@ -1,0 +1,113 @@
+/* Variables del sistema de diseño (Especificación 12, Propuesta A "Açaí").
+   Valores tomados de design/A-Mesas.dc.html y design/A-Detalle.dc.html.
+   Los marcados "derivado" no vienen dibujados en el diseño y se calcularon
+   a partir de la misma paleta.
+
+   Las variables antiguas de global.css (--bg, --ink, --accent...) siguen
+   existiendo mientras quedan pantallas sin migrar; los nombres de aquí no
+   chocan con ellas. */
+
+:root {
+  /* Base */
+  --color-bg: #F3F2F8;
+  --color-surface: #FFFFFF;
+  --color-surface-sunken: #F7F6FB;
+  --color-text: #1D1730;
+  --color-text-label: #4F4866;
+  --color-text-secondary: #6B6580;
+  --color-text-faint: #B6B0C8;
+  --color-border: #E6E3EF;
+  --color-border-strong: #DAD6E6;
+
+  /* Marca */
+  --color-primary: #4B2A86;
+  --color-primary-hover: #3E2272; /* derivado */
+  --color-primary-tint: #ECE6F7;
+  --color-primary-tint-strong: #EFE8FB;
+  --color-primary-border: #CDB9F0;
+  --color-primary-muted: #8E7FB0;
+  --color-primary-dark: #2B1659;
+  --color-on-primary: #FFFFFF;
+  --color-on-dark-muted: #DCD3EE;
+
+  /* Estados */
+  --color-success: #1F9D6B;
+  --color-success-bg: #E7F6EE;
+  --color-success-text: #0F5F3F;
+  --color-success-text-2: #2F6F57;
+  --color-warning: #E8A33D;
+  --color-warning-bg: #FBF1DF;   /* derivado */
+  --color-warning-text: #7A4E0E; /* derivado */
+  --color-danger: #B4443F;
+  --color-danger-bg: #F8E7E6;    /* derivado */
+  --color-danger-hover: #9C3934; /* derivado */
+  --color-disabled-bg: #EEECF3;  /* derivado */
+  --color-disabled-text: #A39DB5; /* derivado */
+  --color-overlay: rgba(29, 23, 48, 0.42); /* derivado */
+  --color-focus-ring: rgba(75, 42, 134, 0.28); /* derivado */
+
+  /* Categorías (símbolo / fondo del círculo) */
+  --cat-acai: #6A3FB5;     --cat-acai-bg: #EEE7FA;
+  --cat-mix: #C2347F;      --cat-mix-bg: #FCE6F1;
+  --cat-yogurt: #1F78C1;   --cat-yogurt-bg: #E2F0FB;
+  --cat-cookies: #A8641E;  --cat-cookies-bg: #FAEBD8;
+  --cat-cafe: #6E4A33;     --cat-cafe-bg: #EEE3DA;
+  --cat-toppings: #1F8A5C; --cat-toppings-bg: #DCF3E7;
+  --cat-oblea: #8F6F0A;    --cat-oblea-bg: #F8EFC8;
+
+  /* Tipografía */
+  --font-sans: 'DM Sans', system-ui, sans-serif;
+  --font-display: 'Fraunces', Georgia, serif;
+
+  --font-size-overline: 10px;
+  --font-size-caption: 11px;
+  --font-size-small: 12px;
+  --font-size-label: 13px;
+  --font-size-body: 14px;
+  --font-size-body-lg: 15px;
+  --font-size-button: 16px;
+  --font-size-amount: 18px;
+  --font-size-card-title: 16px;
+  --font-size-table-name: 21px;
+  --font-size-panel-title: 25px;
+  --font-size-total: 30px;
+  --font-size-detail-title: 34px;
+  --font-size-page-title: 38px;
+
+  --letter-spacing-title: -0.01em;
+  --letter-spacing-overline: 0.12em;
+  --letter-spacing-category: 0.08em;
+
+  /* Espaciado */
+  --space-1: 4px;
+  --space-2: 6px;
+  --space-3: 8px;
+  --space-4: 10px;
+  --space-5: 12px;
+  --space-6: 14px;
+  --space-7: 16px;
+  --space-8: 20px;
+  --space-9: 24px;
+  --space-10: 28px;
+  --space-11: 32px;
+
+  /* Radios */
+  --radius-link: 10px;
+  --radius-control: 12px;
+  --radius-button: 14px;
+  --radius-card: 16px;
+  --radius-tile: 18px;
+  --radius-panel: 20px;
+  --radius-pill: 999px;
+
+  /* Sombras */
+  --shadow-soft: 0 2px 6px rgba(43, 22, 89, 0.06);
+  --shadow-raised: 0 6px 16px rgba(75, 42, 134, 0.12);
+  --shadow-overlay: 0 24px 64px rgba(29, 23, 48, 0.28); /* derivado */
+
+  /* Medidas de layout */
+  --nav-height: 64px;
+  --rail-width: 92px;
+  --order-panel-width: 372px;
+  --product-card-height: 160px;
+}

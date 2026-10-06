@@ -1,0 +1,359 @@
+/* Componentes base del sistema de diseño (Especificación 12).
+   Se usan como clases ui-* directamente o a través de los componentes de
+   src/components/ui/. Solo dependen de las variables de tokens.css. */
+
+/* Utilidades de texto */
+
+.ui-display {
+  font-family: var(--font-display);
+  letter-spacing: var(--letter-spacing-title);
+}
+
+.ui-page-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--font-size-page-title);
+  font-weight: 800;
+  letter-spacing: var(--letter-spacing-title);
+  line-height: 1;
+  color: var(--color-text);
+}
+
+.ui-num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Botón */
+
+.ui-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  height: 46px;
+  padding: 0 var(--space-8);
+  border: none;
+  border-radius: var(--radius-button);
+  font-family: inherit;
+  font-size: var(--font-size-body-lg);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color .12s ease, border-color .12s ease, color .12s ease, transform .08s ease;
+}
+
+.ui-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+.ui-btn--lg {
+  height: 54px;
+  font-size: var(--font-size-button);
+  font-weight: 800;
+}
+
+.ui-btn--sm {
+  height: 40px;
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-control);
+  font-size: var(--font-size-body);
+}
+
+.ui-btn--block {
+  width: 100%;
+}
+
+.ui-btn--primary {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+.ui-btn--primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.ui-btn--secondary {
+  background: var(--color-surface);
+  color: var(--color-primary);
+  border: 1.5px solid var(--color-primary);
+}
+.ui-btn--secondary:hover:not(:disabled) {
+  background: var(--color-primary-tint);
+}
+
+.ui-btn--neutral {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border-strong);
+}
+.ui-btn--neutral:hover:not(:disabled) {
+  background: var(--color-surface-sunken);
+}
+
+.ui-btn--danger {
+  background: var(--color-danger);
+  color: var(--color-on-primary);
+}
+.ui-btn--danger:hover:not(:disabled) {
+  background: var(--color-danger-hover);
+}
+
+/* Acción de texto en rojo, como "Quitar" en el pedido */
+.ui-btn--danger-text {
+  height: auto;
+  padding: var(--space-1) 0;
+  gap: 5px;
+  background: transparent;
+  color: var(--color-danger);
+  font-size: var(--font-size-label);
+  font-weight: 600;
+}
+
+.ui-btn:disabled {
+  cursor: not-allowed;
+  opacity: 1;
+  background: var(--color-disabled-bg);
+  color: var(--color-disabled-text);
+  border-color: transparent;
+}
+.ui-btn--danger-text:disabled {
+  background: transparent;
+}
+
+/* Tarjeta */
+
+.ui-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-soft);
+}
+
+/* Chip */
+
+.ui-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 5px var(--space-4);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-small);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.ui-chip__dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: var(--radius-pill);
+  background: currentColor;
+}
+
+.ui-chip--neutral { background: var(--color-disabled-bg); color: var(--color-text-label); }
+.ui-chip--primary { background: var(--color-primary); color: var(--color-on-primary); }
+.ui-chip--primary-soft { background: var(--color-primary-tint); color: var(--color-primary); }
+.ui-chip--success { background: var(--color-success-bg); color: var(--color-success-text); }
+.ui-chip--warning { background: var(--color-warning-bg); color: var(--color-warning-text); }
+.ui-chip--danger { background: var(--color-danger-bg); color: var(--color-danger); }
+
+.ui-chip--success .ui-chip__dot { background: var(--color-success); }
+.ui-chip--warning .ui-chip__dot { background: var(--color-warning); }
+.ui-chip--neutral .ui-chip__dot { background: var(--color-disabled-text); }
+
+/* Campo de formulario */
+
+.ui-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.ui-field__label {
+  font-size: var(--font-size-label);
+  font-weight: 600;
+  color: var(--color-text-label);
+}
+
+.ui-field__hint {
+  font-size: var(--font-size-small);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.ui-field--error .ui-field__hint {
+  color: var(--color-danger);
+}
+
+.ui-input {
+  width: 100%;
+  height: 44px;
+  padding: 0 var(--space-6);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--font-size-body);
+}
+
+textarea.ui-input {
+  height: auto;
+  min-height: 88px;
+  padding: var(--space-4) var(--space-6);
+  resize: vertical;
+}
+
+.ui-input::placeholder {
+  color: var(--color-text-secondary);
+}
+
+.ui-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+.ui-input:disabled {
+  background: var(--color-disabled-bg);
+  color: var(--color-disabled-text);
+}
+
+.ui-field--error .ui-input {
+  border-color: var(--color-danger);
+}
+
+/* Aviso */
+
+.ui-notice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-7);
+  border-radius: var(--radius-control);
+  font-size: var(--font-size-body);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.ui-notice svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+
+.ui-notice--info { background: var(--color-primary-tint); color: var(--color-primary); }
+.ui-notice--success { background: var(--color-success-bg); color: var(--color-success-text); }
+.ui-notice--warning { background: var(--color-warning-bg); color: var(--color-warning-text); }
+.ui-notice--danger { background: var(--color-danger-bg); color: var(--color-danger); }
+
+/* Tabla */
+
+.ui-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: var(--font-size-body);
+  color: var(--color-text);
+}
+
+.ui-table th {
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+  font-size: var(--font-size-small);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.ui-table td {
+  padding: var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.ui-table tbody tr:hover td {
+  background: var(--color-surface-sunken);
+}
+
+.ui-table .ui-table__num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Modal */
+
+.ui-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-9);
+  background: var(--color-overlay);
+  backdrop-filter: blur(2px);
+}
+
+.ui-modal {
+  width: 460px;
+  max-width: 100%;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--color-surface);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-overlay);
+}
+
+.ui-modal:focus {
+  outline: none;
+}
+
+.ui-modal__header {
+  padding: var(--space-8) var(--space-9) var(--space-7);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.ui-modal__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--font-size-panel-title);
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--color-text);
+}
+
+.ui-modal__subtitle {
+  margin-top: var(--space-1);
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.ui-modal__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-7) var(--space-9);
+}
+
+.ui-modal__footer {
+  display: flex;
+  gap: var(--space-4);
+  padding: var(--space-7) var(--space-9);
+  border-top: 1px solid var(--color-border);
+}
+
+.ui-modal__footer > .ui-btn {
+  flex: 1;
+}

@@ -13,7 +13,10 @@ import SettingsPage from './pages/SettingsPage'
 import ShiftReceiptPage from './pages/ShiftReceiptPage'
 import OrderReceiptPage from './pages/OrderReceiptPage'
 import DatabaseRestorePage from './pages/DatabaseRestorePage'
+import './styles/fonts.css'
+import './styles/tokens.css'
 import './styles/global.css'
+import './styles/ui.css'
 
 function RemoteBanner() {
   const { remote } = useSession()

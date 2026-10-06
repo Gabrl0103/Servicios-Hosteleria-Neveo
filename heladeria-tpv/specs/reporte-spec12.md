@@ -32,3 +32,12 @@ Los dos `.dc.html` no se abren solos: dependen de `support.js` (no incluido), de
 6. **Formato de fecha.** Diseño "sáb. 27 jun 2026"; `es-CO` produce "sáb, 27 jun 2026". Se mantiene el formato actual.
 7. **Fraunces.** El diseño fija pesos 600–800 sin eje óptico; se usa el archivo variable de peso con el tamaño óptico por defecto, igual que lo sirve Google Fonts en la referencia.
 8. **Color del logo.** El azul pizarra del logo no pertenece a la paleta violeta. No se modifica la imagen; se señala por si se quiere una versión del logo en violeta.
+## Paso 2: Parte 1, sistema de diseño base
+
+- `src/styles/tokens.css`: colores (incluye estados éxito, alerta, error, deshabilitado y los de categoría del diseño), tipografía, tamaños, espaciados, radios, sombras y medidas de layout.
+- `src/styles/fonts.css` + `src/assets/fonts/`: DM Sans y Fraunces como `woff2` variables locales (subconjuntos latin y latin-ext, ~125 KB en total) con licencia OFL. Respaldo `system-ui, sans-serif` y `Georgia, serif`.
+- `src/styles/ui.css` + `src/components/ui/index.jsx`: `Button` (principal, secundario, neutro, peligro, texto de peligro; tamaños sm/md/lg), `Card`, `Chip`, `Modal` (Escape, clic fuera, foco inicial configurable, para el Spec 13), `Field` + `Input`, `Notice` y la tabla como clase `.ui-table`.
+- `index.html`: se quitó Nunito de Google Fonts (ya no se usa). Queda Space Mono solo para los recibos, pendiente de decisión.
+- `npm run build` limpio. Lint: los 5 problemas que reporta son anteriores (ConfirmationModal, SessionContext, ReportsPage, TableDetailPage); ninguno en archivos nuevos.
+- `body` pasa a DM Sans. Las variables antiguas de `global.css` se mantienen hasta que cada pantalla se migre (cada pantalla reemplaza sus estilos duplicados en su propio commit). La clase `.mono` de los recibos no se toca.
+
