@@ -1,7 +1,5 @@
-import { useEffect, useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useSession } from '../context/SessionContext'
-import { getBusinessSettings } from '../api/businessSettings'
 import neveoLogo from '../assets/neveo-logo.png'
 import './NavBar.css'
 
@@ -28,17 +26,12 @@ function formatToday() {
 export default function NavBar() {
   const { cashRegister, alertCount } = useSession()
   const navigate = useNavigate()
-  const [logo, setLogo] = useState(null)
-
-  useEffect(() => {
-    getBusinessSettings().then((s) => { if (s.logoBase64) setLogo(s.logoBase64) }).catch(() => {})
-  }, [])
 
   return (
     <header className="navbar">
       <div className="navbar__brand" onClick={() => navigate('/reportes')}>
-        {/* El logo subido en Configuracion tiene prioridad; si no hay, el de Neveo. */}
-        <img className="navbar__logo" src={logo || neveoLogo} alt="Neveo" />
+        {/* Logo fijo de Neveo. El subido en Configuracion es solo para los recibos. */}
+        <img className="navbar__logo" src={neveoLogo} alt="Neveo" />
         <div className="navbar__tagline">PUNTO DE VENTA</div>
       </div>
 
