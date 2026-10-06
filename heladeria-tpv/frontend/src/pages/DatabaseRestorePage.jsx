@@ -1,6 +1,9 @@
 import { useEffect, useState, useRef } from 'react'
 import { listBackups, restoreFromBackup, restoreFromFile } from '../api/backup'
 import { resetAdminPassword } from '../api/businessSettings'
+import { Button, Card, Field, Input, Notice } from '../components/ui'
+import neveoLogo from '../assets/neveo-logo.png'
+import './DatabaseRestorePage.css'
 
 export default function DatabaseRestorePage() {
   const [backups, setBackups] = useState([])
@@ -57,93 +60,77 @@ export default function DatabaseRestorePage() {
 
   if (result) {
     return (
-      <div style={pageStyle}>
-        <div style={cardStyle}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>✓</div>
-          <div style={{ fontSize: 20, fontWeight: 900, color: '#065f46', marginBottom: 8 }}>
-            Restauración completada
-          </div>
-          <p style={{ color: 'var(--text-soft)', fontSize: 14, fontWeight: 700, marginBottom: 20 }}>
-            {result.message}
-          </p>
+      <div className="support-page">
+        <Card className="support-card support-card--result">
+          <span className="support-result__icon" aria-hidden="true">
+            <svg width="30" height="30"><use href="#ic-check" /></svg>
+          </span>
+          <h1 className="support-card__title">Restauración completada</h1>
+          <p className="support-card__text">{result.message}</p>
           {result.preRestoreBackup && (
-            <p style={{ fontSize: 12, color: 'var(--text-faint)', fontWeight: 700 }}>
-              Respaldo previo guardado como: <span style={{ fontFamily: 'monospace' }}>{result.preRestoreBackup}</span>
+            <p className="support-result__backup">
+              Respaldo previo guardado como: <span className="support-filename">{result.preRestoreBackup}</span>
             </p>
           )}
-          <div style={{ marginTop: 24, padding: '16px 20px', background: '#fef3c7', borderRadius: 12, fontSize: 13, fontWeight: 800, color: '#92400e' }}>
-            Cierra y vuelve a abrir la aplicación para que los cambios tomen efecto.
-          </div>
-        </div>
+          <Notice variant="warning">Cierra y vuelve a abrir la aplicación para que los cambios tomen efecto.</Notice>
+        </Card>
       </div>
     )
   }
 
   return (
-    <div style={pageStyle}>
-      <div style={{ ...cardStyle, maxWidth: 640 }}>
-        <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 6 }}>
-          Soporte — Acceso restringido
+    <div className="support-page">
+      <Card className="support-card">
+        <div className="support-brand">
+          <img src={neveoLogo} alt="Neveo" className="support-brand__logo" />
+          <span className="support-label">Soporte — Acceso restringido</span>
         </div>
-        <h1 style={{ fontSize: 22, fontWeight: 900, margin: '0 0 4px', color: 'var(--ink)' }}>
-          Restaurar base de datos
-        </h1>
-        <p style={{ fontSize: 13, color: 'var(--text-soft)', fontWeight: 700, margin: '0 0 24px' }}>
-          Esta operación reemplaza todos los datos actuales. No se puede deshacer fácilmente.
-        </p>
+        <div>
+          <h1 className="support-card__title">Restaurar base de datos</h1>
+          <p className="support-card__text">
+            Esta operación reemplaza todos los datos actuales. No se puede deshacer fácilmente.
+          </p>
+        </div>
 
-        {loadError && (
-          <p style={{ color: 'var(--red-text)', fontSize: 13, marginBottom: 16 }}>{loadError}</p>
-        )}
+        {loadError && <Notice variant="danger">{loadError}</Notice>}
 
-        {/* Backup list */}
-        <div style={{ marginBottom: 20 }}>
-          <div style={labelStyle}>Backups automáticos disponibles</div>
+        {/* Backups automaticos */}
+        <div className="support-section">
+          <div className="support-label">Backups automáticos disponibles</div>
           {backups.length === 0 ? (
-            <p style={{ fontSize: 13, color: 'var(--text-faint)', fontWeight: 700 }}>No hay backups automáticos guardados.</p>
+            <p className="support-card__text">No hay backups automáticos guardados.</p>
           ) : (
-            <div style={{ maxHeight: 220, overflowY: 'auto', border: '1px solid var(--border)', borderRadius: 10 }}>
+            <div className="backup-list" role="radiogroup" aria-label="Backups automáticos">
               {backups.map((name) => (
-                <div
+                <button
                   key={name}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected === name}
                   onClick={() => { setSelected(name); setUploadFile(null); if (fileInputRef.current) fileInputRef.current.value = '' }}
-                  style={{
-                    padding: '10px 14px',
-                    cursor: 'pointer',
-                    fontFamily: 'monospace',
-                    fontSize: 13,
-                    fontWeight: 700,
-                    borderBottom: '1px solid var(--border-soft-2)',
-                    background: selected === name ? 'var(--ink)' : 'transparent',
-                    color: selected === name ? '#fff' : 'var(--ink)',
-                  }}
+                  className={`backup-list__item ${selected === name ? 'backup-list__item--active' : ''}`}
                 >
-                  {name}
-                </div>
+                  <span className="backup-list__radio" aria-hidden="true" />
+                  <span className="support-filename">{name}</span>
+                </button>
               ))}
             </div>
           )}
         </div>
 
-        {/* File upload */}
-        <div style={{ marginBottom: 24 }}>
-          <div style={labelStyle}>O sube un archivo .db manualmente</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              style={{ background: 'var(--tile-bg)', border: 'none', padding: '9px 16px', borderRadius: 9, fontSize: 13, fontWeight: 800, color: 'var(--ink)', cursor: 'pointer' }}
-            >
+        {/* Archivo manual */}
+        <div className="support-section">
+          <div className="support-label">O sube un archivo .db manualmente</div>
+          <div className="support-upload">
+            <Button variant="neutral" size="sm" onClick={() => fileInputRef.current?.click()}>
               Seleccionar archivo
-            </button>
-            {uploadFile && (
-              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)' }}>{uploadFile.name}</span>
-            )}
+            </Button>
+            {uploadFile && <span className="support-filename">{uploadFile.name}</span>}
             <input
               ref={fileInputRef}
               type="file"
               accept=".db"
-              style={{ display: 'none' }}
+              hidden
               onChange={(e) => {
                 const f = e.target.files[0]
                 if (f) { setUploadFile(f); setSelected(null) }
@@ -152,135 +139,69 @@ export default function DatabaseRestorePage() {
           </div>
         </div>
 
-        {/* Confirmation */}
-        <div style={{ marginBottom: 20, padding: '16px 18px', background: '#fef2f2', borderRadius: 12, border: '1px solid #fca5a5' }}>
-          <div style={{ fontSize: 13, fontWeight: 900, color: '#991b1b', marginBottom: 10 }}>
+        {/* Confirmacion */}
+        <div className="danger-zone">
+          <div className="danger-zone__title">
             Esta acción reemplaza todos los datos actuales y no se puede deshacer fácilmente.
           </div>
-          <div style={labelStyle}>Escribe RESTAURAR para confirmar</div>
-          <input
-            value={confirmation}
-            onChange={(e) => setConfirmation(e.target.value)}
-            placeholder="RESTAURAR"
-            style={{
-              width: '100%',
-              padding: '10px 12px',
-              border: '2px solid #fca5a5',
-              borderRadius: 9,
-              fontSize: 14,
-              fontWeight: 800,
-              fontFamily: 'monospace',
-              background: '#fff',
-              boxSizing: 'border-box',
-            }}
-          />
+          <Field label="Escribe RESTAURAR para confirmar">
+            <Input
+              value={confirmation}
+              onChange={(e) => setConfirmation(e.target.value)}
+              placeholder="RESTAURAR"
+              className="danger-zone__input"
+            />
+          </Field>
         </div>
 
-        {error && <p style={{ color: 'var(--red-text)', fontSize: 13, marginBottom: 12 }}>{error}</p>}
+        {error && <Notice variant="danger">{error}</Notice>}
 
-        <button
-          onClick={handleRestore}
-          disabled={!canRestore}
-          style={{
-            width: '100%',
-            padding: '14px',
-            fontSize: 15,
-            fontWeight: 900,
-            borderRadius: 12,
-            border: 'none',
-            cursor: canRestore ? 'pointer' : 'not-allowed',
-            background: canRestore ? '#dc2626' : 'var(--border)',
-            color: canRestore ? '#fff' : 'var(--text-faint)',
-          }}
-        >
+        <Button variant="danger" size="lg" block onClick={handleRestore} disabled={!canRestore} aria-busy={restoring}>
           {restoring ? 'Restaurando...' : 'Restaurar base de datos'}
-        </button>
+        </Button>
 
         {/* Restablecer contraseña de administrador (doble confirmacion) */}
-        <div style={{ marginTop: 32, paddingTop: 24, borderTop: '1px solid var(--border)' }}>
-          <h2 style={{ fontSize: 17, fontWeight: 900, margin: '0 0 4px', color: 'var(--ink)' }}>
-            Restablecer contraseña de administrador
-          </h2>
-          <p style={{ fontSize: 13, color: 'var(--text-soft)', fontWeight: 700, margin: '0 0 16px' }}>
+        <div className="support-reset">
+          <h2 className="support-reset__title">Restablecer contraseña de administrador</h2>
+          <p className="support-card__text">
             Borra la contraseña olvidada. Después hay que crear una nueva en Configuración para poder anular ventas.
           </p>
           {resetDone && (
-            <p style={{ fontSize: 13, fontWeight: 800, color: '#065f46', marginBottom: 12 }}>
-              ✓ Contraseña restablecida. Configura una nueva en Configuración.
-            </p>
+            <Notice variant="success">✓ Contraseña restablecida. Configura una nueva en Configuración.</Notice>
           )}
           {!resetStep ? (
-            <button
-              type="button"
-              onClick={() => { setResetStep(true); setResetDone(false); setResetError('') }}
-              style={{ background: 'var(--tile-bg)', border: 'none', padding: '10px 16px', borderRadius: 9, fontSize: 13, fontWeight: 800, color: 'var(--ink)', cursor: 'pointer' }}
-            >
-              Restablecer contraseña
-            </button>
+            <div>
+              <Button
+                variant="danger-outline"
+                size="sm"
+                onClick={() => { setResetStep(true); setResetDone(false); setResetError('') }}
+              >
+                Restablecer contraseña
+              </Button>
+            </div>
           ) : (
-            <div style={{ padding: '16px 18px', background: '#fef2f2', borderRadius: 12, border: '1px solid #fca5a5' }}>
-              <div style={labelStyle}>Escribe RESTABLECER para confirmar</div>
-              <input
-                value={resetConfirmation}
-                onChange={(e) => setResetConfirmation(e.target.value)}
-                placeholder="RESTABLECER"
-                style={{ width: '100%', padding: '10px 12px', border: '2px solid #fca5a5', borderRadius: 9, fontSize: 14, fontWeight: 800, fontFamily: 'monospace', background: '#fff', boxSizing: 'border-box', marginBottom: 12 }}
-              />
-              {resetError && <p style={{ color: 'var(--red-text)', fontSize: 13, marginBottom: 10 }}>{resetError}</p>}
-              <div style={{ display: 'flex', gap: 10 }}>
-                <button
-                  type="button"
-                  onClick={() => { setResetStep(false); setResetConfirmation('') }}
-                  style={{ flex: 1, padding: '10px', borderRadius: 9, border: '1px solid var(--border)', background: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer' }}
-                >
+            <div className="danger-zone">
+              <Field label="Escribe RESTABLECER para confirmar">
+                <Input
+                  value={resetConfirmation}
+                  onChange={(e) => setResetConfirmation(e.target.value)}
+                  placeholder="RESTABLECER"
+                  className="danger-zone__input"
+                />
+              </Field>
+              {resetError && <Notice variant="danger">{resetError}</Notice>}
+              <div className="danger-zone__actions">
+                <Button variant="neutral" onClick={() => { setResetStep(false); setResetConfirmation('') }}>
                   Cancelar
-                </button>
-                <button
-                  type="button"
-                  onClick={handleResetPassword}
-                  disabled={resetConfirmation !== 'RESTABLECER'}
-                  style={{
-                    flex: 1, padding: '10px', borderRadius: 9, border: 'none', fontSize: 13, fontWeight: 800,
-                    cursor: resetConfirmation === 'RESTABLECER' ? 'pointer' : 'not-allowed',
-                    background: resetConfirmation === 'RESTABLECER' ? '#dc2626' : 'var(--border)',
-                    color: resetConfirmation === 'RESTABLECER' ? '#fff' : 'var(--text-faint)',
-                  }}
-                >
+                </Button>
+                <Button variant="danger" onClick={handleResetPassword} disabled={resetConfirmation !== 'RESTABLECER'}>
                   Confirmar restablecimiento
-                </button>
+                </Button>
               </div>
             </div>
           )}
         </div>
-      </div>
+      </Card>
     </div>
   )
-}
-
-const pageStyle = {
-  minHeight: '100vh',
-  background: '#e7e0d3',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: 32,
-}
-
-const cardStyle = {
-  background: '#fff',
-  borderRadius: 18,
-  padding: '32px 36px',
-  width: '100%',
-  maxWidth: 540,
-  boxShadow: '0 4px 24px rgba(0,0,0,.10)',
-}
-
-const labelStyle = {
-  fontSize: 11,
-  fontWeight: 800,
-  color: 'var(--text-faint)',
-  textTransform: 'uppercase',
-  letterSpacing: '.04em',
-  marginBottom: 8,
-  display: 'block',
 }

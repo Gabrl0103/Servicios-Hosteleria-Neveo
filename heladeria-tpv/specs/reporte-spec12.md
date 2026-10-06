@@ -240,3 +240,18 @@ Decisión de Gabs: para las categorías conocidas se usan los colores del diseñ
     - Con la actual correcta se cambia ("✓ Guardada"), y la anterior deja de servir para anular (403).
   - **Respaldo:** "Descargar copia de seguridad" descarga `heladeria-backup-2026-10-05.db`, un SQLite válido de 160 KB.
   - Sin scroll horizontal a 1366, 1600 y 1920. Sin errores de JavaScript. `npm run build` limpio; lint sin problemas nuevos.
+
+## Paso 12: Soporte `/soporte/restaurar` (Parte 2, punto 10)
+
+- `pages/DatabaseRestorePage.jsx` (solo el render) y `DatabaseRestorePage.css`:
+  - Sin barra superior, como antes. Tarjeta centrada con el logo fijo, título en Fraunces y backups como opciones seleccionables (`role="radio"`).
+  - Zonas de confirmación en rojo para "RESTAURAR" y "RESTABLECER", y botones de peligro.
+  - Los nombres de archivo pasan de `monospace` a DM Sans tabular.
+  - Textos y reglas iguales (texto exacto en mayúsculas, doble paso para restablecer).
+- Con este paso, fuera de los recibos (sus botones "Cerrar ventana" e "Imprimir" no se tocan) ya no quedan `btn-ink`, `btn-outline`, `.card` ni `.mono` en la app.
+- Verificado (Playwright por DOM; restaurar y restablecer con respuestas simuladas, nada se restauró ni se borró):
+  - El botón empieza deshabilitado y no se habilita con "restaurar" en minúsculas, solo con "RESTAURAR".
+  - El backup elegido se marca; un archivo manual reemplaza la selección.
+  - Con una falla simulada se muestra el error; con éxito aparece la pantalla "Restauración completada", con el respaldo previo y el aviso de reiniciar.
+  - Restablecer: "Confirmar" deshabilitado hasta escribir "RESTABLECER"; después muestra el aviso verde.
+  - Sin scroll horizontal a 1366, 1600 y 1920. Sin errores de JavaScript. `npm run build` limpio; lint sin problemas nuevos.
