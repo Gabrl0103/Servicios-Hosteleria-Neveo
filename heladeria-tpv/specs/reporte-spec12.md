@@ -149,3 +149,17 @@ Decisión de Gabs: para las categorías conocidas se usan los colores del diseñ
   - `modal-pago-nequi-1366x768.png`
   - `modal-pago-procesando-1366x768.png`
   - `recibo-venta-nequi.png`
+
+## Paso 7: Turno y Cuadre de caja (Parte 2, punto 5)
+
+- `pages/CashRegisterPage.jsx` + `CashRegisterPage.css` (Turno), derivados del sistema:
+  - Título "Turno de hoy" en Fraunces.
+  - Tarjeta de estado: punto verde, "Caja 01 · en curso" en Fraunces, inicio y ventas, y "Acumulado" a 30 px tabular.
+  - Fichas por método más la de "Total" en el violeta oscuro del riel.
+  - "Esperado en caja" en verde. "Gastos del turno" en una columna a la derecha; el ícono 🗑 pasa a un botón con ícono SVG.
+  - "Ir a mesas →" (principal) y "Cerrar turno" (variante nueva `danger-outline`).
+  - Abrir turno: cajeros como opciones seleccionables en violeta, campo de valor inicial e interruptor `ui-switch` (nuevo en el sistema, con `role="switch"`).
+- `pages/CashBoxHistoryPage.jsx` + `CashBoxHistoryPage.css` (Cuadre de caja): la tabla pasa a `.ui-table` con números tabulares, chip "En curso" y botón "Comprobante" neutro con ícono.
+- Sin cambios de lógica: abrir turno, gastos (agregar y eliminar), esperado en caja, resumen por método, cerrar turno y abrir el comprobante funcionan igual, con los mismos textos.
+- 1366×768, 1600×900 y 1920×1080: sin scroll horizontal ni montos cortados. Con turno abierto y sin gastos, Turno cabe sin scroll vertical a 1366×768.
+- Capturas: `capturas-spec12/turno-1366x768.png` y `capturas-spec12/cuadre-de-caja-1366x768.png`.

@@ -1,0 +1,76 @@
+/* Pantalla Cuadre de caja (derivada de la propuesta A). */
+
+.cashbox-page {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  padding: var(--space-9) var(--space-11) var(--space-10);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.cashbox-page__inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.cashbox-page__header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-7);
+  flex-wrap: wrap;
+}
+
+.cashbox-page__subtitle {
+  margin: 0;
+  font-size: var(--font-size-body);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.cashbox-table-card {
+  overflow: hidden;
+}
+
+.cashbox-table th {
+  background: var(--color-surface-sunken);
+}
+
+.cashbox-table th:first-child,
+.cashbox-table td:first-child {
+  padding-left: var(--space-9);
+}
+
+.cashbox-table th:last-child,
+.cashbox-table td:last-child {
+  padding-right: var(--space-9);
+}
+
+.cashbox-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.cashbox-table__strong {
+  font-weight: 700;
+}
+
+.cashbox-table__muted {
+  color: var(--color-text-label);
+  font-weight: 600;
+}
+
+.cashbox-table__action {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.cashbox-empty {
+  margin: 0;
+  padding: var(--space-9);
+  font-size: var(--font-size-body);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}

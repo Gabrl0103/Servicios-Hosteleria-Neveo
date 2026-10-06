@@ -7,7 +7,7 @@ function cx(...names) {
   return names.filter(Boolean).join(' ')
 }
 
-// variant: primary | secondary | neutral | danger | danger-text
+// variant: primary | secondary | neutral | danger | danger-outline | danger-text
 // size: sm | md | lg
 export function Button({ variant = 'primary', size = 'md', block = false, className, type = 'button', ...props }) {
   return (
