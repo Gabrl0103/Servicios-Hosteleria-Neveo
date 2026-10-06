@@ -202,3 +202,23 @@ Decisión de Gabs: para las categorías conocidas se usan los colores del diseñ
   - **"Aún no hay suficientes datos":** muestra el mensaje con los días que hay, y "Ideas" muestra el mensaje vacío.
   - En los tres: sin scroll horizontal a 1366, 1600 y 1920, sin textos cortados, sin Space Mono y sin errores de JavaScript.
   - Reportes conserva sus estilos tras mover `data-viz.css`. `npm run build` limpio; lint sin problemas nuevos.
+
+## Paso 10: Productos (Parte 2, punto 8) y selector de categoría (Parte 3, punto 5)
+
+- `pages/ProductsPage.jsx` y `ProductsPage.css`:
+  - Chips de categoría con su círculo (sin duplicados por mayúsculas, tildes o espacios).
+  - Lista con círculo de categoría, nombre en Fraunces, precio tabular, interruptor Disponible/Agotado y botones de ícono para editar y eliminar.
+  - Formulario con el `Modal` base.
+- `.icon-btn` pasó de `ReportsPage.css` a `styles/ui.css` (lo usan Reportes y Productos).
+- **Selector de categoría:**
+  - Opciones: "Sin categoría", las existentes y "+ Nueva categoría". Esta última abre el campo de texto solo cuando hace falta.
+  - Una "nueva" que ya existe con otra escritura (ej. "acai", "Acaí" frente a "ACAI") usa la existente y lo avisa en el campo.
+  - Al editar sin cambiar de categoría, se conserva el texto original del producto.
+  - Solo cambia el valor de `form.category`. El envío, la disponibilidad, el borrado y la carga no cambian. No hay cambios en el backend.
+- Verificado (Playwright por DOM y API, base de prueba; los productos de prueba se borraron al final):
+  - **Categorías:** con categoría existente se guardó "Yogurt Helado"; la nueva "Granizados" aparece como chip con el símbolo genérico.
+  - **Sin duplicados:** "acai" y "Acaí" se guardaron como "ACAI", y "  granizados  " como "Granizados". Queda un solo chip de cada una.
+  - **Edición:** "Acai 12oz" conserva "acaí".
+  - **Resto:** Disponible/Agotado cambia en el backend; Eliminar pide confirmación y borra; el filtro por chip funciona; Escape cierra el formulario; el foco inicial queda en Nombre.
+  - Sin scroll horizontal ni cifras cortadas a 1366, 1600 y 1920. Sin errores de JavaScript. `npm run build` limpio; lint sin problemas nuevos.
+- **Nota:** el nombre que se muestra para una categoría es el del primer producto que la usa. En la base de prueba hay "ACAI", "Açaí" y "acaí", así que se ve "ACAI".

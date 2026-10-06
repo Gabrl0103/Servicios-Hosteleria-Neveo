@@ -1,0 +1,212 @@
+/* Pantalla Productos (derivada de la propuesta A). */
+
+.products-page {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  padding: var(--space-9) var(--space-11) var(--space-10);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.products-page__inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.products-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-7);
+}
+
+.products-page__heading {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-7);
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.products-page__subtitle {
+  margin: 0;
+  font-size: var(--font-size-body);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+/* Chips de categoria */
+.category-chips {
+  display: flex;
+  gap: var(--space-3);
+  overflow-x: auto;
+  padding-bottom: var(--space-1);
+  scrollbar-width: thin;
+}
+
+.category-chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: 40px;
+  padding: 0 var(--space-6) 0 var(--space-2);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text-label);
+  font-family: inherit;
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.category-chip:hover {
+  background: var(--color-surface-sunken);
+}
+
+.category-chip--active,
+.category-chip--active:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-tint);
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.category-chip:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+.category-chip__all {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary-dark);
+  color: var(--color-on-primary);
+}
+
+/* Lista */
+.product-list {
+  overflow: hidden;
+}
+
+.product-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  padding: var(--space-5) var(--space-9);
+}
+
+.product-row + .product-row {
+  border-top: 1px solid var(--color-border);
+}
+
+.product-row:hover {
+  background: var(--color-surface-sunken);
+}
+
+.product-row__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.product-row__name {
+  font-family: var(--font-display);
+  font-size: var(--font-size-card-title);
+  font-weight: 700;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.product-row__category {
+  margin-top: 2px;
+  font-size: var(--font-size-caption);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-category);
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.product-row__price {
+  width: 100px;
+  text-align: right;
+  font-size: var(--font-size-body-lg);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.availability {
+  width: 128px;
+  height: 34px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: none;
+  border-radius: var(--radius-pill);
+  font-family: inherit;
+  font-size: var(--font-size-label);
+  font-weight: 700;
+}
+
+.availability__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-pill);
+}
+
+.availability--on {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+}
+
+.availability--on .availability__dot {
+  background: var(--color-success);
+}
+
+.availability--off {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.availability--off .availability__dot {
+  background: var(--color-danger);
+}
+
+.availability:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+/* Formulario */
+.product-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+}
+
+.product-form__category {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.product-form__category .ui-input {
+  flex: 1;
+  min-width: 0;
+}
+
+select.ui-input {
+  cursor: pointer;
+}
