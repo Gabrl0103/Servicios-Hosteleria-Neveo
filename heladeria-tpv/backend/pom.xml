@@ -13,7 +13,7 @@
 
     <groupId>com.heladeria</groupId>
     <artifactId>tpv</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
     <name>heladeria-tpv</name>
     <description>Sistema de punto de venta para heladeria</description>
 
