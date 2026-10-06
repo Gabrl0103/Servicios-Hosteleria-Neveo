@@ -2,15 +2,18 @@ import { useEffect, useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useSession } from '../context/SessionContext'
 import { getBusinessSettings } from '../api/businessSettings'
+import neveoLogo from '../assets/neveo-logo.png'
+import './NavBar.css'
 
+// Orden de los enlaces segun el diseño (design/A-Mesas.dc.html).
 const ITEMS = [
-  { to: '/reportes', label: 'Reportes', icon: 'ic-chart' },
-  { to: '/analisis', label: 'Análisis', icon: 'ic-bulb' },
-  { to: '/mesas', label: 'Mesas', icon: 'ic-cart' },
-  { to: '/turno', label: 'Turno', icon: 'ic-clock' },
-  { to: '/cuadre-de-caja', label: 'Cuadre de caja', icon: 'ic-list' },
-  { to: '/productos', label: 'Productos', icon: 'ic-box' },
-  { to: '/configuracion', label: 'Configuración', icon: 'ic-settings' },
+  { to: '/mesas', label: 'Mesas' },
+  { to: '/turno', label: 'Turno' },
+  { to: '/cuadre-de-caja', label: 'Cuadre de caja' },
+  { to: '/reportes', label: 'Reportes' },
+  { to: '/analisis', label: 'Análisis' },
+  { to: '/productos', label: 'Productos' },
+  { to: '/configuracion', label: 'Configuración' },
 ]
 
 function formatToday() {
@@ -32,115 +35,45 @@ export default function NavBar() {
   }, [])
 
   return (
-    <header
-      style={{
-        flex: 'none',
-        height: 66,
-        background: 'var(--surface)',
-        borderBottom: '1px solid #E9E1D5',
-        display: 'flex',
-        alignItems: 'center',
-        padding: '0 22px',
-        gap: 26,
-        boxShadow: '0 1px 0 rgba(0,0,0,.02)',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 11, cursor: 'pointer' }} onClick={() => navigate('/reportes')}>
-        <div style={{ width: 38, height: 38, borderRadius: 11, background: logo ? 'transparent' : 'var(--ink)', display: 'grid', placeItems: 'center', overflow: 'hidden' }}>
-          {logo ? (
-            <img src={logo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-          ) : (
-            <span className="mono" style={{ color: '#fff', fontSize: 18, fontWeight: 700 }}>N</span>
-          )}
-        </div>
-        <div style={{ lineHeight: 1 }}>
-          <div style={{ fontSize: 17, fontWeight: 900, color: 'var(--ink)', letterSpacing: '-0.01em' }}>Neveo</div>
-          <div className="mono" style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-faint)', letterSpacing: '.18em', marginTop: 3 }}>
-            PUNTO DE VENTA
-          </div>
-        </div>
+    <header className="navbar">
+      <div className="navbar__brand" onClick={() => navigate('/reportes')}>
+        {/* El logo subido en Configuracion tiene prioridad; si no hay, el de Neveo. */}
+        <img className="navbar__logo" src={logo || neveoLogo} alt="Neveo" />
+        <div className="navbar__tagline">PUNTO DE VENTA</div>
       </div>
 
-      <nav style={{ display: 'flex', gap: 4, marginLeft: 8 }}>
+      <nav className="navbar__links">
         {ITEMS.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            style={({ isActive }) => ({
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '10px 14px',
-              borderRadius: 11,
-              fontSize: 14,
-              fontWeight: 700,
-              textDecoration: 'none',
-              background: isActive ? 'var(--ink)' : 'transparent',
-              color: isActive ? '#fff' : 'var(--text-muted)',
-            })}
-          >
-            <svg width="18" height="18">
-              <use href={`#${item.icon}`} />
-            </svg>
+          <NavLink key={item.to} to={item.to} className="navbar__link">
             {item.label}
             {item.to === '/analisis' && alertCount > 0 && (
-              <span
-                title={`${alertCount} alerta(s)`}
-                style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--red-text)', marginLeft: -2 }}
-              />
+              <span className="navbar__alert-dot" title={`${alertCount} alerta(s)`} />
             )}
           </NavLink>
         ))}
       </nav>
 
-      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 14 }}>
+      <div className="navbar__status">
         {cashRegister ? (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              background: 'var(--green-bg)',
-              border: '1px solid var(--green-border)',
-              padding: '7px 13px',
-              borderRadius: 10,
-            }}
-          >
-            <span
-              style={{
-                width: 9,
-                height: 9,
-                borderRadius: '50%',
-                background: 'var(--green-dot)',
-                boxShadow: '0 0 0 3px rgba(39,165,103,.18)',
-              }}
-            />
-            <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--green-text)' }}>Turno abierto</span>
-            <span className="mono" style={{ fontSize: 12, color: '#5aa37f', fontWeight: 700 }}>
-              · {new Date(cashRegister.openedAt).toLocaleTimeString('es-CO', { hour: 'numeric', minute: '2-digit' })}
-            </span>
+          <div className="navbar__shift navbar__shift--open">
+            <span className="navbar__shift-dot" />
+            <div className="navbar__shift-text">
+              <span className="navbar__shift-title">Turno abierto</span>
+              <span className="navbar__shift-meta">
+                {new Date(cashRegister.openedAt).toLocaleTimeString('es-CO', { hour: 'numeric', minute: '2-digit' })} · Caja 01
+              </span>
+            </div>
           </div>
         ) : (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              background: 'var(--neutral-bg)',
-              padding: '7px 13px',
-              borderRadius: 10,
-            }}
-          >
-            <span style={{ width: 9, height: 9, borderRadius: '50%', background: 'var(--text-faint)' }} />
-            <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--neutral-text)' }}>Sin turno abierto</span>
+          <div className="navbar__shift navbar__shift--closed">
+            <span className="navbar__shift-dot" />
+            <div className="navbar__shift-text">
+              <span className="navbar__shift-title">Sin turno abierto</span>
+              <span className="navbar__shift-meta">Caja 01</span>
+            </div>
           </div>
         )}
-        <div style={{ textAlign: 'right', lineHeight: 1.15 }}>
-          <div className="mono" style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)' }}>
-            {formatToday()}
-          </div>
-          <div style={{ fontSize: 11, color: 'var(--text-faint)', fontWeight: 700 }}>Caja 01</div>
-        </div>
+        <div className="navbar__date">{formatToday()}</div>
       </div>
     </header>
   )

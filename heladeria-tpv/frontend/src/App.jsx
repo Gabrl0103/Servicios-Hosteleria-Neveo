@@ -22,7 +22,8 @@ function RemoteBanner() {
   const { remote } = useSession()
   if (!remote) return null
   return (
-    <div style={{ flex: 'none', padding: '6px 16px', textAlign: 'center', fontSize: 12, fontWeight: 800, background: '#fef3c7', color: '#92400e' }}>
+    <div className="remote-banner" role="status">
+      <span className="remote-banner__dot" />
       Modo remoto (solo lectura)
     </div>
   )

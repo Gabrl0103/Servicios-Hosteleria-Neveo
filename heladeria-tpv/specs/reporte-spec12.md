@@ -32,6 +32,7 @@ Los dos `.dc.html` no se abren solos: dependen de `support.js` (no incluido), de
 6. **Formato de fecha.** Diseño "sáb. 27 jun 2026"; `es-CO` produce "sáb, 27 jun 2026". Se mantiene el formato actual.
 7. **Fraunces.** El diseño fija pesos 600–800 sin eje óptico; se usa el archivo variable de peso con el tamaño óptico por defecto, igual que lo sirve Google Fonts en la referencia.
 8. **Color del logo.** El azul pizarra del logo no pertenece a la paleta violeta. No se modifica la imagen; se señala por si se quiere una versión del logo en violeta.
+
 ## Paso 2: Parte 1, sistema de diseño base
 
 - `src/styles/tokens.css`: colores (incluye estados éxito, alerta, error, deshabilitado y los de categoría del diseño), tipografía, tamaños, espaciados, radios, sombras y medidas de layout.
@@ -41,3 +42,12 @@ Los dos `.dc.html` no se abren solos: dependen de `support.js` (no incluido), de
 - `npm run build` limpio. Lint: los 5 problemas que reporta son anteriores (ConfirmationModal, SessionContext, ReportsPage, TableDetailPage); ninguno en archivos nuevos.
 - `body` pasa a DM Sans. Las variables antiguas de `global.css` se mantienen hasta que cada pantalla se migre (cada pantalla reemplaza sus estilos duplicados en su propio commit). La clase `.mono` de los recibos no se toca.
 
+
+## Paso 3: NavBar (pantalla de ejemplo)
+
+- `components/NavBar.jsx` + `NavBar.css`: barra blanca de 64 px; logo real `neveo-logo.png` 48×48 con esquinas de 12 px y rótulo "PUNTO DE VENTA" (sin la "N" de prueba ni el texto "Neveo"); enlaces sin ícono en el orden del diseño, activo con tinte violeta; punto de alerta ámbar en "Análisis" (misma condición que antes: `alertCount > 0`); chip de turno "Turno abierto · hora · Caja 01" en verde, y estado derivado "Sin turno abierto · Caja 01" en gris; fecha a la derecha.
+- `App.jsx`: banner "Modo remoto (solo lectura)" con los colores de alerta del sistema. Misma condición y texto.
+- Sin cambios de lógica: mismos enlaces y rutas, mismo clic del logo a Reportes, misma carga del logo subido en Configuración (tiene prioridad sobre `neveo-logo.png`).
+- Probado con el backend sirviendo `frontend/dist` (como el instalador) y una base de datos de prueba aparte. A 1366×768 no hay scroll horizontal ni elementos cortados.
+- Capturas: `capturas-spec12/navbar-1366x768.png` (turno abierto) y `capturas-spec12/navbar-sin-turno-1366x768.png`. El resto de la pantalla sigue con el estilo anterior hasta migrarla.
+- Observación (no se tocó): al abrir `#/mesas` en frío, `TablesPage` redirige a `/turno` antes de que cargue el turno, porque `cashRegister` empieza en `null`. Es comportamiento previo.
