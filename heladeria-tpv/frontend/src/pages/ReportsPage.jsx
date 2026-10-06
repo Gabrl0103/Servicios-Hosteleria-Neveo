@@ -5,6 +5,7 @@ import { getOrders, anularOrder } from '../api/orders'
 import { getBusinessSettings } from '../api/businessSettings'
 import { useSession } from '../context/SessionContext'
 import { formatCurrency } from '../utils/format'
+import { parseLocalDate } from '../utils/time'
 import { Button, Card, Chip, Field, Input, Modal, Notice } from '../components/ui'
 import CategoryIcon from '../components/CategoryIcon'
 import { niceAxisTicks, formatAxisLabel, buildBarGeometry } from '../utils/chartGeometry'
@@ -54,7 +55,7 @@ function buildChartGeometry(dailySales) {
   const points = dailySales.map((d, i) => {
     const x = padLeft + step * i
     const y = bottom - (Number(d.total) / max) * (bottom - top)
-    const label = new Date(d.date).toLocaleDateString('es-CO', { weekday: 'short' }).replace('.', '')
+    const label = parseLocalDate(d.date).toLocaleDateString('es-CO', { weekday: 'short' }).replace('.', '')
     return { x, y, label, value: Number(d.total), date: d.date }
   })
 
@@ -370,7 +371,7 @@ export default function ReportsPage() {
                 <div className="report-label">Mejor día</div>
                 <div className="period-kpi__day">
                   {report.bestDay
-                    ? new Date(report.bestDay.date).toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'short' })
+                    ? parseLocalDate(report.bestDay.date).toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'short' })
                     : 'Sin ventas'}
                 </div>
                 <div className="period-kpi__note">{report.bestDay ? formatCurrency(report.bestDay.total) : '—'}</div>
@@ -415,7 +416,7 @@ export default function ReportsPage() {
                         top: `${chart.points[lineHover].y / chart.height * 100 - 6}%`,
                       }}
                     >
-                      {new Date(chart.points[lineHover].date).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' })}:{' '}
+                      {parseLocalDate(chart.points[lineHover].date).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' })}:{' '}
                       {formatCurrency(chart.points[lineHover].value)}
                     </div>
                   )}

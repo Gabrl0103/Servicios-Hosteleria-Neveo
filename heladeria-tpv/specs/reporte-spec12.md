@@ -265,3 +265,12 @@ Decisión de Gabs: para las categorías conocidas se usan los colores del diseñ
   - Al imprimir, el fondo se fuerza a transparente.
   - Verificado midiendo los recibos de venta y turno antes y después, en pantalla y en modo impresión: 0 diferencias internas del papel (102 elementos). En impresión, la posición del papel es igual (60,34); en pantalla baja 3 px por los botones nuevos.
 - `npm run build` limpio; lint sin problemas nuevos.
+
+## Paso 14: Corrección de fechas en Reportes
+
+- **Falla (venía de antes del rediseño):** las fechas sin hora del backend ("2026-10-05") se leían con `new Date(...)`, que las toma como medianoche UTC. En Colombia (UTC-5) eso cae el día anterior, así que el gráfico de "Hoy" mostraba domingo 4 de octubre en vez de lunes 5. Afectaba a las etiquetas de "Ventas por día", su tooltip y "Mejor día".
+- **Arreglo:** `utils/time.js` agrega `parseLocalDate()`, que lee la fecha como día local, y `ReportsPage.jsx` la usa en esos 3 lugares. Las fechas con hora (ventas, turnos, anulaciones) llegan sin zona, se leen como hora local y ya estaban bien. Las etiquetas de "Facturado por mes" las arma el backend.
+- **Verificado** en el navegador con zona `America/Bogota`:
+  - "Hoy" muestra "lun", el tooltip dice "5 de oct de 2026" y "Mejor día" dice "lunes, 5 de oct".
+  - "Esta semana" muestra "dom, lun", que coincide con las fechas de la API (4 y 5 de octubre).
+  - `npm run build` limpio; lint sin problemas nuevos.
