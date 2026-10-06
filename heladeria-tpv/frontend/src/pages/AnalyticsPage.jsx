@@ -4,6 +4,10 @@ import { getReportSummary } from '../api/reports'
 import { useSession } from '../context/SessionContext'
 import { formatCurrency } from '../utils/format'
 import { buildBarGeometry } from '../utils/chartGeometry'
+import { Card, Notice } from '../components/ui'
+import CategoryIcon from '../components/CategoryIcon'
+import '../styles/data-viz.css'
+import './AnalyticsPage.css'
 
 function toIsoDate(date) {
   const y = date.getFullYear()
@@ -61,63 +65,71 @@ export default function AnalyticsPage() {
     : null
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', padding: 32 }}>
-      <div style={{ maxWidth: 1080, margin: '0 auto' }}>
-        <h1 style={{ fontSize: 25, fontWeight: 900, margin: '0 0 4px' }}>Análisis</h1>
-        <p style={{ fontSize: 14, color: 'var(--text-soft)', fontWeight: 700, margin: '0 0 18px' }}>
-          Calculado con las ventas de los últimos 30 días (sin contar hoy).
-        </p>
+    <div className="analytics-page">
+      <div className="analytics-page__inner">
+        <header className="analytics-page__header">
+          <h1 className="ui-page-title">Análisis</h1>
+          <p className="analytics-page__subtitle">Calculado con las ventas de los últimos 30 días (sin contar hoy).</p>
+        </header>
 
-        {error && <p style={{ color: 'var(--red-text)' }}>{error}</p>}
-        {!insights && !error && <p style={{ color: 'var(--text-soft)' }}>Cargando...</p>}
+        {error && <Notice variant="danger">{error}</Notice>}
+        {!insights && !error && <p className="analytics-page__muted">Cargando...</p>}
 
         {insights && (
           <>
             {!insights.hasEnoughData ? (
-              <div className="card" style={{ padding: '20px 22px', marginBottom: 16 }}>
-                <div style={{ fontSize: 15, fontWeight: 900, color: 'var(--ink)', marginBottom: 4 }}>
-                  Aún no hay suficientes datos para analizar
+              <Card className="report-card analytics-empty">
+                <span className="analytics-empty__icon" aria-hidden="true">
+                  <svg width="22" height="22"><use href="#ic-chart" /></svg>
+                </span>
+                <div>
+                  <h2 className="report-card__title">Aún no hay suficientes datos para analizar</h2>
+                  <p className="analytics-page__muted">
+                    Se necesitan al menos 14 días con ventas en el último mes (hay {insights.daysWithSales}).
+                  </p>
                 </div>
-                <div style={{ fontSize: 13, color: 'var(--text-soft)', fontWeight: 700 }}>
-                  Se necesitan al menos 14 días con ventas en el último mes (hay {insights.daysWithSales}).
-                </div>
-              </div>
+              </Card>
             ) : (
-              <div className="card" style={{ padding: '20px 22px', marginBottom: 16 }}>
-                <div style={{ fontSize: 15, fontWeight: 900, color: 'var(--ink)', marginBottom: 12 }}>Alertas</div>
-                {insights.alerts.length === 0 ? (
-                  <p style={{ fontSize: 14, color: 'var(--green-text)', fontWeight: 800, margin: 0 }}>Todo en orden</p>
-                ) : (
-                  insights.alerts.map((a, i) => (
-                    <div
-                      key={i}
-                      style={{ padding: '10px 14px', background: 'var(--red-bg)', color: 'var(--red-text)', borderRadius: 10, fontSize: 13.5, fontWeight: 800, marginBottom: 8 }}
-                    >
-                      {a.message}
-                    </div>
-                  ))
-                )}
-              </div>
+              <Card className="report-card">
+                <h2 className="report-card__title">Alertas</h2>
+                <div className="report-card__body alert-list">
+                  {insights.alerts.length === 0 ? (
+                    <Notice variant="success" icon={<svg aria-hidden="true"><use href="#ic-check" /></svg>}>Todo en orden</Notice>
+                  ) : (
+                    insights.alerts.map((a, i) => (
+                      <Notice key={i} variant="warning" icon={<span className="alert-list__dot" />}>
+                        {a.message}
+                      </Notice>
+                    ))
+                  )}
+                </div>
+              </Card>
             )}
 
-            <div className="card" style={{ padding: '22px 24px', marginBottom: 16, position: 'relative' }}>
-              <div style={{ fontSize: 15, fontWeight: 900, color: 'var(--ink)', marginBottom: 4 }}>Ventas por hora</div>
-              <div style={{ fontSize: 13, color: 'var(--text-soft)', fontWeight: 700, marginBottom: 14 }}>
+            <Card className="report-card">
+              <h2 className="report-card__title">Ventas por hora</h2>
+              <div className="report-card__subtitle">
                 Promedio por día con ventas. Horas pico resaltadas.
+                {geometry && (
+                  <span className="hours-legend">
+                    <span className="hours-legend__item"><span className="hours-legend__swatch hours-legend__swatch--peak" />Pico</span>
+                    <span className="hours-legend__item"><span className="hours-legend__swatch" />Resto</span>
+                  </span>
+                )}
               </div>
               {!geometry ? (
-                <p style={{ color: 'var(--text-soft)', fontSize: 14 }}>Sin ventas en el periodo.</p>
+                <p className="analytics-page__muted">Sin ventas en el periodo.</p>
               ) : (
-                <div style={{ position: 'relative' }}>
+                <div className="chart">
                   <svg
                     viewBox={`0 0 ${geometry.width} ${geometry.height}`}
-                    style={{ width: '100%', height: 'auto', display: 'block' }}
+                    className="chart__svg"
                     onMouseLeave={() => setHover(null)}
                   >
                     {geometry.gridLines.map((gl, i) => (
                       <g key={i}>
-                        <line x1={geometry.padLeft} y1={gl.y} x2={geometry.width - 20} y2={gl.y} stroke="var(--border-soft)" strokeWidth="1" />
-                        <text x={geometry.padLeft - 8} y={gl.y + 4} textAnchor="end" fontFamily="DM Sans, system-ui, sans-serif" fontSize="11" fill="#a89e8c" fontWeight="700">
+                        <line x1={geometry.padLeft} y1={gl.y} x2={geometry.width - 20} y2={gl.y} stroke="var(--color-border)" strokeWidth="1" />
+                        <text x={geometry.padLeft - 8} y={gl.y + 4} textAnchor="end" className="chart__axis" fontSize="11">
                           {gl.label}
                         </text>
                       </g>
@@ -129,11 +141,11 @@ export default function AnalyticsPage() {
                           y={b.y}
                           width={Math.max(geometry.barWidth, 2)}
                           height={b.barHeight}
-                          rx="4"
-                          fill={hours[i].peak ? '#DA2C5E' : '#c9bfb0'}
-                          fillOpacity={hover === i ? 1 : 0.85}
+                          rx="5"
+                          fill={hours[i].peak ? 'var(--color-primary)' : 'var(--color-primary-border)'}
+                          fillOpacity={hover === i ? 1 : 0.88}
                         />
-                        <text x={b.x + geometry.barWidth / 2} y={geometry.bottom + 22} textAnchor="middle" fontFamily="DM Sans, system-ui, sans-serif" fontSize="12" fill="#a89e8c" fontWeight="700">
+                        <text x={b.x + geometry.barWidth / 2} y={geometry.bottom + 22} textAnchor="middle" className="chart__axis" fontSize="12">
                           {b.label}
                         </text>
                       </g>
@@ -141,19 +153,10 @@ export default function AnalyticsPage() {
                   </svg>
                   {hover !== null && geometry.bars[hover] && (
                     <div
+                      className="chart__tooltip"
                       style={{
-                        position: 'absolute',
                         left: `${(geometry.bars[hover].x + geometry.barWidth / 2) / geometry.width * 100}%`,
                         top: `${geometry.bars[hover].y / geometry.height * 100 - 6}%`,
-                        transform: 'translate(-50%, -100%)',
-                        background: 'var(--ink)',
-                        color: '#fff',
-                        padding: '6px 12px',
-                        borderRadius: 8,
-                        fontSize: 12,
-                        fontWeight: 800,
-                        whiteSpace: 'nowrap',
-                        pointerEvents: 'none',
                       }}
                     >
                       {geometry.bars[hover].label}: {formatCurrency(hours[hover].avgAmount)} · {hours[hover].avgOrders} ventas
@@ -162,46 +165,53 @@ export default function AnalyticsPage() {
                   )}
                 </div>
               )}
-            </div>
+            </Card>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-              <div className="card" style={{ padding: '20px 22px' }}>
-                <div style={{ fontSize: 15, fontWeight: 900, color: 'var(--ink)', marginBottom: 14 }}>Productos más vendidos</div>
-                {!topProducts ? (
-                  <p style={{ color: 'var(--text-soft)', fontSize: 14 }}>Cargando...</p>
-                ) : topProducts.length === 0 ? (
-                  <p style={{ color: 'var(--text-soft)', fontSize: 14 }}>Sin ventas en el periodo.</p>
-                ) : (
-                  topProducts.map((p, i) => (
-                    <div
-                      key={p.productId}
-                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '9px 0', borderBottom: '1px solid var(--border-soft-2)' }}
-                    >
-                      <span className="mono" style={{ width: 20, fontSize: 13, fontWeight: 700, color: 'var(--text-faint-2)' }}>{i + 1}</span>
-                      <span style={{ flex: 1, fontWeight: 800, color: 'var(--ink)', fontSize: 14 }}>{p.productName}</span>
-                      <span className="mono" style={{ fontSize: 12.5, color: 'var(--text-soft)', fontWeight: 700 }}>{p.totalQuantity} und</span>
-                      <span className="mono" style={{ fontSize: 13, color: 'var(--ink)', fontWeight: 700, width: 96, textAlign: 'right' }}>
-                        {formatCurrency(p.totalAmount)}
-                      </span>
+            <div className="analytics-columns">
+              <Card className="report-card">
+                <h2 className="report-card__title">Productos más vendidos</h2>
+                <div className="report-card__body">
+                  {!topProducts ? (
+                    <p className="analytics-page__muted">Cargando...</p>
+                  ) : topProducts.length === 0 ? (
+                    <p className="analytics-page__muted">Sin ventas en el periodo.</p>
+                  ) : (
+                    <div className="ranking">
+                      {topProducts.map((p, i) => (
+                        <div key={p.productId} className="ranking__row">
+                          <span className="ranking__pos">{i + 1}</span>
+                          <CategoryIcon category={p.category} size={30} />
+                          <span className="ranking__name">{p.productName}</span>
+                          <span className="ranking__qty">{p.totalQuantity} und</span>
+                          <span className="ranking__total">{formatCurrency(p.totalAmount)}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))
-                )}
-              </div>
+                  )}
+                </div>
+              </Card>
 
-              <div className="card" style={{ padding: '20px 22px' }}>
-                <div style={{ fontSize: 15, fontWeight: 900, color: 'var(--ink)', marginBottom: 14 }}>Ideas y recomendaciones</div>
-                {!insights.hasEnoughData ? (
-                  <p style={{ color: 'var(--text-soft)', fontSize: 14 }}>Aún no hay suficientes datos para analizar.</p>
-                ) : insights.recommendations.length === 0 ? (
-                  <p style={{ color: 'var(--text-soft)', fontSize: 14 }}>Sin ideas por ahora.</p>
-                ) : (
-                  insights.recommendations.map((r, i) => (
-                    <div key={i} style={{ padding: '10px 0', borderBottom: '1px solid var(--border-soft-2)', fontSize: 14, fontWeight: 700, color: 'var(--ink)' }}>
-                      {r.message}
+              <Card className="report-card">
+                <h2 className="report-card__title">Ideas y recomendaciones</h2>
+                <div className="report-card__body">
+                  {!insights.hasEnoughData ? (
+                    <p className="analytics-page__muted">Aún no hay suficientes datos para analizar.</p>
+                  ) : insights.recommendations.length === 0 ? (
+                    <p className="analytics-page__muted">Sin ideas por ahora.</p>
+                  ) : (
+                    <div className="ideas">
+                      {insights.recommendations.map((r, i) => (
+                        <div key={i} className="ideas__row">
+                          <span className="ideas__icon" aria-hidden="true">
+                            <svg width="18" height="18"><use href="#ic-bulb" /></svg>
+                          </span>
+                          <span>{r.message}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))
-                )}
-              </div>
+                  )}
+                </div>
+              </Card>
             </div>
           </>
         )}

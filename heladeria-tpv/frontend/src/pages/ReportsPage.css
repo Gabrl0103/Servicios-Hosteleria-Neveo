@@ -32,14 +32,6 @@
   color: var(--color-text-secondary);
 }
 
-.report-label {
-  font-size: var(--font-size-small);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--color-text-secondary);
-}
-
 /* KPIs fijos */
 .kpi-grid {
   display: grid;
@@ -70,66 +62,6 @@
 
 .kpi-card--accent .report-label {
   color: var(--color-on-dark-muted);
-}
-
-/* Tarjetas con titulo */
-.report-card {
-  padding: var(--space-8) var(--space-9);
-  min-width: 0;
-}
-
-.report-card__title {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: var(--font-size-amount);
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.report-card__subtitle {
-  margin: 2px 0 var(--space-6);
-  font-size: var(--font-size-label);
-  font-weight: 500;
-  color: var(--color-text-secondary);
-}
-
-.report-card__title + .ranking,
-.report-card__title + .methods,
-.report-card__title + .reports-page__muted {
-  margin-top: var(--space-6);
-}
-
-/* Graficas (geometria de utils/chartGeometry.js) */
-.chart {
-  position: relative;
-}
-
-.chart__svg {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-.chart__axis {
-  fill: var(--color-text-secondary);
-  font-family: var(--font-sans);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-.chart__tooltip {
-  position: absolute;
-  transform: translate(-50%, -100%);
-  padding: var(--space-2) var(--space-5);
-  border-radius: var(--radius-link);
-  background: var(--color-primary-dark);
-  color: var(--color-on-primary);
-  font-size: var(--font-size-small);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-  pointer-events: none;
-  box-shadow: var(--shadow-raised);
 }
 
 /* Selector de periodo */
@@ -266,53 +198,6 @@
   grid-template-columns: 1.3fr 1fr;
   gap: var(--space-7);
   align-items: start;
-}
-
-/* Ranking */
-.ranking__row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-5);
-  padding: var(--space-4) 0;
-}
-
-.ranking__row + .ranking__row {
-  border-top: 1px solid var(--color-border);
-}
-
-.ranking__pos {
-  width: 20px;
-  font-size: var(--font-size-body);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: var(--color-text-secondary);
-}
-
-.ranking__name {
-  flex: 1;
-  min-width: 0;
-  font-size: var(--font-size-body-lg);
-  font-weight: 700;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.ranking__qty {
-  width: 64px;
-  text-align: right;
-  font-size: var(--font-size-label);
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  color: var(--color-text-secondary);
-}
-
-.ranking__total {
-  width: 100px;
-  text-align: right;
-  font-size: var(--font-size-body);
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
 }
 
 /* Metodos de pago */

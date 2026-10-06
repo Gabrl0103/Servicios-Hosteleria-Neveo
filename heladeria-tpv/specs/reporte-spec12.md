@@ -187,3 +187,18 @@ Decisión de Gabs: para las categorías conocidas se usan los colores del diseñ
   - Al anular: fila tachada con chip y detalle. "Cuadre actual" baja exactamente el valor de la venta. KPIs, gráfica mensual y resumen se vuelven a pedir sin recargar la página.
   - Sin contraseña configurada (respuesta simulada): aparece el aviso, y "Ir a Configuración" lleva a Configuración.
   - Sin scroll horizontal ni cifras cortadas a 1366×768, 1600×900 y 1920×1080. Sin errores de JavaScript. `npm run build` limpio; lint sin problemas nuevos.
+
+## Paso 9: Análisis (Parte 2, punto 7)
+
+- `pages/AnalyticsPage.jsx` (solo el render) y `AnalyticsPage.css`:
+  - Alertas como avisos ámbar, igual que el punto de la barra; "Todo en orden" en verde.
+  - Estado sin datos suficientes con ícono.
+  - "Ventas por hora": horas pico en violeta y el resto en lila, con leyenda.
+  - Ranking con el círculo de categoría. Ideas con ícono de bombilla.
+- `styles/data-viz.css` nuevo: tarjetas con título, gráficas y ranking compartidos por Reportes y Análisis, movidos desde `ReportsPage.css` sin cambios.
+- Verificado (Playwright por DOM, base de prueba; los dos últimos estados con la respuesta de `/api/insights` simulada):
+  - **Con datos:** 1 alerta ámbar y 9 barras, de ellas 3 pico. El tooltip funciona, el ranking muestra 4 productos con su círculo y hay 5 ideas. Aparece el punto en la barra.
+  - **"Todo en orden":** aviso verde y el punto de la barra desaparece.
+  - **"Aún no hay suficientes datos":** muestra el mensaje con los días que hay, y "Ideas" muestra el mensaje vacío.
+  - En los tres: sin scroll horizontal a 1366, 1600 y 1920, sin textos cortados, sin Space Mono y sin errores de JavaScript.
+  - Reportes conserva sus estilos tras mover `data-viz.css`. `npm run build` limpio; lint sin problemas nuevos.

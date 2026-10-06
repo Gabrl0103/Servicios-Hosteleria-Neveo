@@ -1,0 +1,129 @@
+/* Pantalla Analisis (derivada de la propuesta A). Tarjetas, graficas y
+   ranking vienen de styles/data-viz.css. */
+
+.analytics-page {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  padding: var(--space-9) var(--space-11) var(--space-10);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.analytics-page__inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.analytics-page__header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-7);
+  flex-wrap: wrap;
+}
+
+.analytics-page__subtitle,
+.analytics-page__muted {
+  margin: 0;
+  font-size: var(--font-size-body);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.analytics-empty {
+  display: flex;
+  align-items: center;
+  gap: var(--space-7);
+}
+
+.analytics-empty .analytics-page__muted {
+  margin-top: var(--space-1);
+}
+
+.analytics-empty__icon {
+  width: 48px;
+  height: 48px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary-tint);
+  color: var(--color-primary);
+}
+
+.alert-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.alert-list__dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-warning);
+}
+
+.hours-legend {
+  display: inline-flex;
+  gap: var(--space-6);
+  margin-left: var(--space-6);
+  vertical-align: middle;
+}
+
+.hours-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 600;
+  color: var(--color-text-label);
+}
+
+.hours-legend__swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--color-primary-border);
+}
+
+.hours-legend__swatch--peak {
+  background: var(--color-primary);
+}
+
+.analytics-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-7);
+  align-items: start;
+}
+
+.ideas__row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-5);
+  padding: var(--space-4) 0;
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.ideas__row + .ideas__row {
+  border-top: 1px solid var(--color-border);
+}
+
+.ideas__icon {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+}

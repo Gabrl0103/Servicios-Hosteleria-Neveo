@@ -8,6 +8,7 @@ import { formatCurrency } from '../utils/format'
 import { Button, Card, Chip, Field, Input, Modal, Notice } from '../components/ui'
 import CategoryIcon from '../components/CategoryIcon'
 import { niceAxisTicks, formatAxisLabel, buildBarGeometry } from '../utils/chartGeometry'
+import '../styles/data-viz.css'
 import './ReportsPage.css'
 
 const METHODS = [
