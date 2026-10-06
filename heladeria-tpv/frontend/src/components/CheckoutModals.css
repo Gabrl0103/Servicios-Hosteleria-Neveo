@@ -1,0 +1,402 @@
+/* Modales del cobro: cantidad, confirmacion y pago (Especificacion 12,
+   Parte 2, punto 4). Derivados del sistema de la propuesta A. */
+
+/* Cantidad */
+.qty-picker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-7);
+  padding: var(--space-3) 0 var(--space-8);
+}
+
+.qty-picker__btn {
+  width: 58px;
+  height: 58px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-card);
+  background: var(--color-primary-tint);
+  color: var(--color-primary);
+}
+
+.qty-picker__btn--plus {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.qty-picker__btn:hover {
+  filter: brightness(0.96);
+}
+
+.qty-picker__btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+.qty-picker__input {
+  width: 120px;
+  height: 64px;
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: var(--radius-button);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 38px;
+  font-weight: 800;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.qty-picker__input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+.qty-shortcuts {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+}
+
+.qty-shortcuts__label {
+  margin-right: var(--space-1);
+  font-size: var(--font-size-label);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.qty-shortcuts__btn,
+.pay-bill {
+  height: 40px;
+  padding: 0 var(--space-8);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--font-size-body-lg);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.qty-shortcuts__btn:hover,
+.pay-bill:hover {
+  border-color: var(--color-primary-border);
+  background: var(--color-primary-tint);
+  color: var(--color-primary);
+}
+
+.qty-shortcuts__btn:focus-visible,
+.pay-bill:focus-visible,
+.pay-method:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+/* Pie con total (confirmacion) */
+.checkout-footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.checkout-footer__buttons {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.checkout-footer__buttons > .ui-btn {
+  flex: 1;
+}
+
+.checkout-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.checkout-total__label {
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.checkout-total__value {
+  font-size: 26px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
+/* Confirmacion con observaciones */
+.confirm-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.confirm-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-radius: var(--radius-button);
+  background: var(--color-surface-sunken);
+}
+
+.confirm-item__main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.confirm-item__name {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--font-size-body-lg);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.confirm-item__qty {
+  color: var(--color-text-secondary);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.confirm-item__total {
+  font-size: var(--font-size-body-lg);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.confirm-item__note {
+  height: 40px;
+  font-size: var(--font-size-label);
+}
+
+/* Pago */
+.pay-total {
+  margin-top: var(--space-2);
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-primary-dark);
+}
+
+.pay-total__detail {
+  margin-top: var(--space-1);
+  font-size: var(--font-size-label);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+}
+
+.pay-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+}
+
+.pay-section:last-child {
+  margin-bottom: var(--space-1);
+}
+
+.pay-label {
+  font-size: var(--font-size-small);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.pay-label__hint {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+
+.pay-discount {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.pay-discount__input {
+  width: 96px;
+  font-size: var(--font-size-button);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.pay-discount__unit {
+  font-size: var(--font-size-button);
+  font-weight: 700;
+  color: var(--color-text-label);
+}
+
+.pay-discount__saving {
+  padding: 5px var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+  font-size: var(--font-size-label);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.pay-methods {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.pay-method {
+  flex: 1;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--font-size-body);
+  font-weight: 700;
+}
+
+.pay-method:hover {
+  background: var(--color-surface-sunken);
+}
+
+.pay-method--active,
+.pay-method--active:hover {
+  border: 2px solid var(--color-primary);
+  background: var(--color-primary-tint);
+  color: var(--color-primary);
+}
+
+.pay-method__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-pill);
+}
+
+.pay-bills {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+}
+
+.pay-bill {
+  padding: 0 var(--space-1);
+  font-size: var(--font-size-label);
+}
+
+.cash-tiles {
+  display: flex;
+  gap: var(--space-5);
+}
+
+.cash-tile {
+  position: relative;
+  flex: 1;
+  padding: var(--space-5) var(--space-7);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-button);
+  background: var(--color-surface-sunken);
+}
+
+.cash-tile__label {
+  font-size: var(--font-size-small);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.cash-tile__value {
+  margin-top: var(--space-1);
+  font-size: 24px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
+.cash-tile--ok {
+  border-color: transparent;
+  background: var(--color-success-bg);
+}
+
+.cash-tile--ok .cash-tile__value {
+  color: var(--color-success-text);
+}
+
+.cash-tile--short {
+  border-color: transparent;
+  background: var(--color-danger-bg);
+}
+
+.cash-tile--short .cash-tile__value {
+  color: var(--color-danger);
+}
+
+.cash-tile__clear {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text-secondary);
+}
+
+.cash-tile__clear:hover {
+  background: var(--color-border);
+}
+
+.pay-manual {
+  font-size: var(--font-size-button);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.pay-digital {
+  margin-bottom: var(--space-1);
+  padding: var(--space-9);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-button);
+  background: var(--color-surface-sunken);
+  text-align: center;
+}
+
+.pay-digital__title {
+  font-family: var(--font-display);
+  font-size: var(--font-size-amount);
+  font-weight: 700;
+}
+
+.pay-digital__text {
+  margin-top: var(--space-2);
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}

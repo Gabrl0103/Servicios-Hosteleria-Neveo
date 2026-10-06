@@ -1,5 +1,7 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { formatCurrency } from '../utils/format'
+import { Button, Modal, Notice } from './ui'
+import './CheckoutModals.css'
 
 const BILLS = [10000, 20000, 50000, 100000]
 
@@ -16,6 +18,8 @@ export default function PaymentModal({ subtotal, onConfirm, onCancel, loading })
   const [discountPercent, setDiscountPercent] = useState('')
   const [manualAmount, setManualAmount] = useState('')
   const [inputSource, setInputSource] = useState(null)
+  // Foco inicial en el descuento, nunca en "Confirmar venta".
+  const discountRef = useRef(null)
 
   const discountValue = Number(discountPercent) || 0
   const discountAmount = subtotal * (discountValue / 100)
@@ -54,194 +58,131 @@ export default function PaymentModal({ subtotal, onConfirm, onCancel, loading })
   }
 
   const methodInfo = METHODS.find((m) => m.value === method)
-  const changeColor = change == null ? 'var(--ink)' : change >= 0 ? 'var(--green-text)' : 'var(--red-text)'
-  const changeBg = change == null ? 'var(--surface-2)' : change >= 0 ? 'var(--green-bg)' : 'var(--red-bg)'
-  const changeBorder = change == null ? 'var(--border)' : change >= 0 ? 'var(--green-border)' : '#f1d4d4'
+  const changeTone = change == null ? '' : change >= 0 ? 'cash-tile--ok' : 'cash-tile--short'
 
   return (
-    <div
-      onClick={onCancel}
-      style={{
-        position: 'absolute',
-        inset: 0,
-        background: 'rgba(42,38,34,.42)',
-        backdropFilter: 'blur(2px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 40,
-      }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{ background: '#fff', width: 500, borderRadius: 24, boxShadow: 'var(--shadow-modal)', overflow: 'hidden', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}
-      >
-        <div style={{ padding: '22px 26px', background: 'var(--ink)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flex: 'none' }}>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 800, color: '#bdb2a3', textTransform: 'uppercase', letterSpacing: '.06em' }}>
-              Total a cobrar
+    <Modal
+      title="Total a cobrar"
+      closeButton
+      width={520}
+      onClose={onCancel}
+      dismissible={!loading}
+      initialFocusRef={discountRef}
+      headerExtra={(
+        <>
+          <div className="pay-total">{formatCurrency(total)}</div>
+          {discountValue > 0 && (
+            <div className="pay-total__detail">
+              {formatCurrency(subtotal)} − {discountValue}% ({formatCurrency(discountAmount)})
             </div>
-            <div className="mono" style={{ fontSize: 34, fontWeight: 700, marginTop: 2 }}>{formatCurrency(total)}</div>
-            {discountValue > 0 && (
-              <div className="mono" style={{ fontSize: 12.5, color: '#bdb2a3', marginTop: 2 }}>
-                {formatCurrency(subtotal)} − {discountValue}% ({formatCurrency(discountAmount)})
-              </div>
-            )}
-          </div>
-          <button
-            onClick={onCancel}
-            style={{ width: 36, height: 36, borderRadius: 11, background: 'rgba(255,255,255,.14)', color: '#fff', fontSize: 18, fontWeight: 800 }}
-          >
-            <svg width="14" height="14"><use href="#ic-x" /></svg>
-          </button>
+          )}
+        </>
+      )}
+      footer={(
+        <Button size="lg" disabled={!canConfirm || loading} aria-busy={loading} onClick={handleConfirm}>
+          {loading ? 'Procesando...' : 'Confirmar venta'}
+        </Button>
+      )}
+    >
+      <div className="pay-section">
+        <div className="pay-label">
+          Descuento <span className="pay-label__hint">(opcional, %)</span>
         </div>
+        <div className="pay-discount">
+          <input
+            ref={discountRef}
+            type="number"
+            min="0"
+            max="100"
+            value={discountPercent}
+            onChange={(e) => setDiscountPercent(e.target.value)}
+            placeholder="0"
+            className="ui-input pay-discount__input"
+            aria-label="Descuento en porcentaje"
+          />
+          <span className="pay-discount__unit">%</span>
+          {discountValue > 0 && (
+            <span className="pay-discount__saving">Ahorra {formatCurrency(discountAmount)}</span>
+          )}
+        </div>
+      </div>
 
-        <div style={{ padding: '24px 26px', overflowY: 'auto' }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-soft)', textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 11 }}>
-            Descuento <span style={{ textTransform: 'none', letterSpacing: 0, color: 'var(--text-faint-2)', fontWeight: 700 }}>(opcional, %)</span>
+      <div className="pay-section">
+        <div className="pay-label">Método de pago</div>
+        <div className="pay-methods">
+          {METHODS.map((m) => {
+            const active = method === m.value
+            return (
+              <button
+                key={m.value}
+                type="button"
+                onClick={() => setMethod(m.value)}
+                className={`pay-method ${active ? 'pay-method--active' : ''}`}
+                aria-pressed={active}
+              >
+                <span className="pay-method__dot" style={{ background: m.color }} />
+                {m.label}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {method === 'EFECTIVO' ? (
+        <div className="pay-section">
+          <div className="pay-label">
+            Efectivo recibido <span className="pay-label__hint">(opcional)</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 22 }}>
+          <div className="pay-bills">
+            {BILLS.map((bill) => (
+              <button key={bill} type="button" className="pay-bill" onClick={() => selectBill(bill)}>
+                {formatCurrency(bill)}
+              </button>
+            ))}
+          </div>
+          <div className="cash-tiles">
+            <div className="cash-tile">
+              <div className="cash-tile__label">Recibido</div>
+              <div className="cash-tile__value">{effectiveReceived != null ? formatCurrency(effectiveReceived) : '—'}</div>
+              {effectiveReceived != null && (
+                <button
+                  type="button"
+                  className="cash-tile__clear"
+                  onClick={() => { setReceived(null); setManualAmount(''); setInputSource(null) }}
+                  aria-label="Limpiar"
+                >
+                  <svg width="12" height="12" aria-hidden="true"><use href="#ic-x" /></svg>
+                </button>
+              )}
+            </div>
+            <div className={`cash-tile ${changeTone}`}>
+              <div className="cash-tile__label">Cambio</div>
+              <div className="cash-tile__value">{change == null ? '—' : formatCurrency(change)}</div>
+            </div>
+          </div>
+          <label className="ui-field">
+            <span className="ui-field__hint">O escribe el monto manualmente</span>
             <input
               type="number"
               min="0"
-              max="100"
-              value={discountPercent}
-              onChange={(e) => setDiscountPercent(e.target.value)}
-              placeholder="0"
-              style={{ width: 90, border: '1px solid var(--border)', borderRadius: 10, padding: '10px 12px', fontSize: 16, fontWeight: 700 }}
+              value={manualAmount}
+              onChange={(e) => handleManualChange(e.target.value)}
+              placeholder="$0"
+              className="ui-input pay-manual"
             />
-            <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-muted)' }}>%</span>
-            {discountValue > 0 && (
-              <span className="mono" style={{ fontSize: 13, color: 'var(--green-text)', fontWeight: 700 }}>
-                Ahorra {formatCurrency(discountAmount)}
-              </span>
-            )}
-          </div>
-
-          <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-soft)', textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 11 }}>
-            Método de pago
-          </div>
-          <div style={{ display: 'flex', gap: 10, marginBottom: 22 }}>
-            {METHODS.map((m) => {
-              const active = method === m.value
-              return (
-                <button
-                  key={m.value}
-                  onClick={() => setMethod(m.value)}
-                  style={{
-                    flex: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 8,
-                    padding: '13px 0',
-                    borderRadius: 13,
-                    fontSize: 14,
-                    fontWeight: 800,
-                    border: active ? `2px solid ${m.color}` : '1px solid var(--border)',
-                    background: active ? m.color + '14' : '#fff',
-                    color: 'var(--ink)',
-                  }}
-                >
-                  <span style={{ width: 11, height: 11, borderRadius: '50%', background: m.color }} />
-                  {m.label}
-                </button>
-              )
-            })}
-          </div>
-
-          {method === 'EFECTIVO' ? (
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-soft)', textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 11 }}>
-                Efectivo recibido{' '}
-                <span style={{ textTransform: 'none', letterSpacing: 0, color: 'var(--text-faint-2)', fontWeight: 700 }}>(opcional)</span>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 9, marginBottom: 14 }}>
-                {BILLS.map((bill) => (
-                  <button
-                    key={bill}
-                    onClick={() => selectBill(bill)}
-                    style={{ padding: '12px 4px', borderRadius: 11, border: '1px solid var(--border)', background: '#fff', fontSize: 13, fontWeight: 800, color: 'var(--ink)' }}
-                  >
-                    {formatCurrency(bill)}
-                  </button>
-                ))}
-              </div>
-              <div style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
-                <div style={{ flex: 1, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 13, padding: '13px 16px', position: 'relative' }}>
-                  <div style={{ fontSize: 12, color: 'var(--text-soft)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.04em' }}>
-                    Recibido
-                  </div>
-                  <div className="mono" style={{ fontSize: 20, fontWeight: 700, color: 'var(--ink)', marginTop: 3 }}>
-                    {effectiveReceived != null ? formatCurrency(effectiveReceived) : '—'}
-                  </div>
-                  {effectiveReceived != null && (
-                    <button
-                      onClick={() => { setReceived(null); setManualAmount(''); setInputSource(null) }}
-                      aria-label="Limpiar"
-                      style={{ position: 'absolute', top: 8, right: 8, background: 'transparent', color: 'var(--text-faint)', padding: 2 }}
-                    >
-                      <svg width="12" height="12"><use href="#ic-x" /></svg>
-                    </button>
-                  )}
-                </div>
-                <div style={{ flex: 1, background: changeBg, border: `1px solid ${changeBorder}`, borderRadius: 13, padding: '13px 16px' }}>
-                  <div style={{ fontSize: 12, color: 'var(--text-soft)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.04em' }}>
-                    Cambio
-                  </div>
-                  <div className="mono" style={{ fontSize: 20, fontWeight: 700, color: changeColor, marginTop: 3 }}>
-                    {change == null ? '—' : formatCurrency(change)}
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ marginBottom: 22 }}>
-                <div style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--text-faint)', marginBottom: 6 }}>
-                  O escribe el monto manualmente
-                </div>
-                <input
-                  type="number"
-                  min="0"
-                  value={manualAmount}
-                  onChange={(e) => handleManualChange(e.target.value)}
-                  placeholder="$0"
-                  style={{ width: '100%', border: '1px solid var(--border)', borderRadius: 10, padding: '10px 12px', fontSize: 16, fontWeight: 700 }}
-                />
-              </div>
-              {change != null && change < 0 && (
-                <p style={{ marginTop: -14, marginBottom: 18, fontSize: 13, color: 'var(--red-text)', fontWeight: 700 }}>
-                  El monto recibido es menor al total
-                </p>
-              )}
-            </div>
-          ) : (
-            <div
-              style={{
-                background: 'var(--surface-2)',
-                border: '1px dashed var(--border-strong)',
-                borderRadius: 14,
-                padding: 24,
-                textAlign: 'center',
-                marginBottom: 22,
-              }}
-            >
-              <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--ink)' }}>Cobro por {methodInfo.label}</div>
-              <div className="mono" style={{ fontSize: 13, color: 'var(--text-soft)', fontWeight: 700, marginTop: 6 }}>
-                Confirma que el pago de {formatCurrency(total)} llegó antes de finalizar.
-              </div>
-            </div>
+          </label>
+          {change != null && change < 0 && (
+            <Notice variant="danger" className="pay-short">El monto recibido es menor al total</Notice>
           )}
-
-          <button
-            disabled={!canConfirm || loading}
-            onClick={handleConfirm}
-            className="btn-accent"
-            style={{ width: '100%', fontSize: 18, padding: 17 }}
-          >
-            {loading ? 'Procesando...' : 'Confirmar venta'}
-          </button>
         </div>
-      </div>
-    </div>
+      ) : (
+        <div className="pay-digital">
+          <div className="pay-digital__title">Cobro por {methodInfo.label}</div>
+          <div className="pay-digital__text">
+            Confirma que el pago de <span className="ui-num">{formatCurrency(total)}</span> llegó antes de finalizar.
+          </div>
+        </div>
+      )}
+    </Modal>
   )
 }

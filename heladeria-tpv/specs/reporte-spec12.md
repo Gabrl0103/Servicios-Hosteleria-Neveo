@@ -114,3 +114,38 @@ Decisión de Gabs: para las categorías conocidas se usan los colores del diseñ
 - 1366×768, 1600×900 y 1920×1080: sin scroll horizontal ni textos cortados. Sin errores de JavaScript.
 - `npm run build` limpio. Lint: los mismos 5 problemas anteriores, ninguno nuevo.
 - Capturas: `capturas-spec12/detalle-mesa-1366x768.png` y `capturas-spec12/detalle-mesa-reingreso-1366x768.png`.
+
+## Paso 6: Modales del cobro (Parte 2, punto 4)
+
+- `components/QuantityModal.jsx`, `ConfirmationModal.jsx` y `PaymentModal.jsx` usan el `Modal` base, con estilos en `components/CheckoutModals.css`. Solo cambió el JSX: estado, cálculo de descuento y cambio, validación (`canConfirm`), datos enviados (`handleConfirm`), creación de la orden y apertura del recibo (en `TableDetailPage`) quedan igual, igual que los textos de los botones ("Agregar al pedido", "Cancelar", "Continuar a cobrar", "Confirmar venta" / "Procesando...").
+- `Modal` base ampliado: ícono en la cabecera, contenido extra bajo el título y botón "×" opcional. Con `dismissible={false}` no lo cierran Escape, el clic fuera ni la "×". La cabecera y el pie quedan fijos; el cuerpo se desplaza por dentro.
+- Cantidad: círculo de categoría, nombre en Fraunces, −/campo/+ grandes, atajos 2/5/10 y "Agregar al pedido · $ X" como botón principal violeta.
+- Confirmación: cada producto con su círculo de categoría, cantidad, total de línea y campo de observación. Total fijo en el pie con "Cancelar" y "Continuar a cobrar".
+- Pago:
+  - Cabecera con "Total a cobrar", el total a 36 px tabular y el detalle del descuento.
+  - Descuento con chip "Ahorra $ X" y método de pago con el elegido en violeta (cada método conserva su color de punto).
+  - Billetes, y casillas Recibido/Cambio a 24 px tabular: el cambio en verde si alcanza y en rojo si falta. Aviso de error "El monto recibido es menor al total".
+  - "Confirmar venta" en el pie, siempre visible.
+- Foco inicial: campo de cantidad, primera observación y campo de descuento, nunca el botón que confirma. Enter en esos campos no confirma nada.
+- Cierre:
+  - **Cambio de comportamiento pedido por Gabs:** Escape y clic fuera cierran los tres modales (antes solo clic fuera).
+  - Mientras se envía el pago (`loading`), Escape, clic fuera y la "×" no lo cierran. El botón muestra "Procesando..." en violeta atenuado, legible (`aria-busy`).
+- Se quitó un `useState` sin usar de `ConfirmationModal` (era un error de lint). Lint: 4 problemas, todos anteriores.
+
+### Verificación (Playwright, backend sirviendo `frontend/dist`, copia de prueba de la base, nunca AppData)
+- A 1366×768 los tres modales caben. El de pago mide 51–717 px; con el aviso de monto menor el cuerpo se desplaza por dentro, la página no se mueve y "Confirmar venta" sigue visible.
+- Cantidad: foco en el campo; Escape y clic fuera cierran sin agregar nada.
+- Confirmación: foco en la primera observación; Escape cierra y al reabrir las observaciones siguen ahí.
+- Venta A (Mesa 3: Acai 9oz ×2 con "sin azúcar", Frozen 9oz, Americano con "bien caliente"; descuento 10 %; efectivo $ 50.000):
+  - El modal muestra $ 44.100, "$ 49.000 − 10% ($ 4.900)" y cambio $ 5.900.
+  - Durante el envío (retrasado a propósito), Escape y clic fuera no lo cierran y la "×" queda deshabilitada.
+  - El recibo se abre con los mismos números y las dos observaciones. La mesa queda en $ 0.
+- Venta B (Neveo Mix 9oz y Oblea; descuento 15 %; Nequi): $ 16.575 = $ 19.500 − $ 2.925. El recibo muestra lo mismo con método NEQUI. La mesa queda en $ 0 y aparece "Disponible · Sin pendiente".
+- Sin errores de JavaScript. El recibo no se modificó.
+- Capturas en `capturas-spec12/`:
+  - `modal-cantidad-1366x768.png`
+  - `modal-confirmacion-1366x768.png`
+  - `modal-pago-efectivo-1366x768.png`
+  - `modal-pago-nequi-1366x768.png`
+  - `modal-pago-procesando-1366x768.png`
+  - `recibo-venta-nequi.png`

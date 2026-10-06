@@ -59,10 +59,16 @@ export function Input({ className, ...props }) {
   return <input className={cx('ui-input', className)} {...props} />
 }
 
-// Modal centrado. Se cierra con Escape o con un clic fuera (salvo que
-// dismissible sea false). initialFocusRef indica que control recibe el foco
-// al abrir; si no se pasa, el foco queda en el propio cuadro.
-export function Modal({ title, subtitle, onClose, footer, width, initialFocusRef, dismissible = true, children }) {
+// Modal centrado. Se cierra con Escape, con un clic fuera o con la "x"
+// (closeButton), salvo que dismissible sea false: en ese caso ninguna de las
+// tres lo cierra. initialFocusRef indica que control recibe el foco al abrir;
+// si no se pasa, el foco queda en el propio cuadro. icon va a la izquierda del
+// titulo y headerExtra debajo del subtitulo. El cuerpo se desplaza por dentro
+// si no cabe.
+export function Modal({
+  title, subtitle, icon, headerExtra, closeButton = false, onClose, footer, width,
+  initialFocusRef, dismissible = true, children,
+}) {
   const titleId = useId()
   const dialogRef = useRef(null)
 
@@ -98,8 +104,17 @@ export function Modal({ title, subtitle, onClose, footer, width, initialFocusRef
       >
         {title && (
           <div className="ui-modal__header">
-            <h2 id={titleId} className="ui-modal__title">{title}</h2>
-            {subtitle && <div className="ui-modal__subtitle">{subtitle}</div>}
+            {icon}
+            <div className="ui-modal__heading">
+              <h2 id={titleId} className="ui-modal__title">{title}</h2>
+              {subtitle && <div className="ui-modal__subtitle">{subtitle}</div>}
+              {headerExtra}
+            </div>
+            {closeButton && (
+              <button type="button" className="ui-modal__close" onClick={onClose} disabled={!dismissible} aria-label="Cerrar">
+                <svg width="14" height="14" aria-hidden="true"><use href="#ic-x" /></svg>
+              </button>
+            )}
           </div>
         )}
         <div className="ui-modal__body">{children}</div>

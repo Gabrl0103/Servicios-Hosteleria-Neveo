@@ -1,12 +1,16 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { formatCurrency } from '../utils/format'
 import { categoryInfo } from '../utils/categoryColors'
+import { Button, Modal } from './ui'
+import CategoryIcon from './CategoryIcon'
+import './CheckoutModals.css'
 
 const SHORTCUTS = [2, 5, 10]
 
 export default function QuantityModal({ product, onConfirm, onCancel }) {
   const [quantity, setQuantity] = useState(1)
   const info = categoryInfo(product.category)
+  const inputRef = useRef(null)
 
   function changeBy(delta) {
     setQuantity((q) => Math.max(1, q + delta))
@@ -25,109 +29,45 @@ export default function QuantityModal({ product, onConfirm, onCancel }) {
   const subtotal = product.price * safeQuantity
 
   return (
-    <div
-      onClick={onCancel}
-      style={{
-        position: 'absolute',
-        inset: 0,
-        background: 'rgba(42,38,34,.42)',
-        backdropFilter: 'blur(2px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 40,
-      }}
+    <Modal
+      title={product.name}
+      subtitle={`${formatCurrency(product.price)} c/u · ${info.short}`}
+      icon={<CategoryIcon category={product.category} size={44} />}
+      closeButton
+      width={420}
+      onClose={onCancel}
+      initialFocusRef={inputRef}
+      footer={(
+        <Button size="lg" disabled={safeQuantity < 1} onClick={() => onConfirm(safeQuantity)}>
+          Agregar al pedido <span className="ui-num">· {formatCurrency(subtotal)}</span>
+        </Button>
+      )}
     >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{ background: '#fff', width: 420, borderRadius: 22, boxShadow: 'var(--shadow-modal)', overflow: 'hidden' }}
-      >
-        <div style={{ padding: '22px 24px', borderBottom: '1px solid var(--border-soft)', display: 'flex', alignItems: 'center', gap: 13 }}>
-          <span
-            style={{
-              width: 42,
-              height: 42,
-              borderRadius: 12,
-              background: info.color + '1f',
-              color: info.color,
-              display: 'grid',
-              placeItems: 'center',
-              flex: 'none',
-            }}
-          >
-            <svg width="22" height="22"><use href={`#cat-${info.icon}`} /></svg>
-          </span>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 18, fontWeight: 900, color: 'var(--ink)' }}>{product.name}</div>
-            <div className="mono" style={{ fontSize: 13, color: 'var(--text-soft)', fontWeight: 700 }}>
-              {formatCurrency(product.price)} c/u · {info.short}
-            </div>
-          </div>
-          <button
-            onClick={onCancel}
-            style={{ width: 34, height: 34, borderRadius: 10, background: 'var(--tile-bg)', color: 'var(--text-soft-2)', fontSize: 16, fontWeight: 800 }}
-          >
-            <svg width="14" height="14"><use href="#ic-x" /></svg>
-          </button>
-        </div>
-
-        <div style={{ padding: '26px 24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 18, marginBottom: 20 }}>
-            <button
-              onClick={() => changeBy(-1)}
-              style={{ width: 58, height: 58, borderRadius: 16, background: 'var(--tile-bg)', color: 'var(--ink)', fontSize: 30, fontWeight: 800 }}
-            >
-              −
-            </button>
-            <div style={{ width: 120, textAlign: 'center' }}>
-              <input
-                type="number"
-                value={quantity}
-                onChange={handleInputChange}
-                className="mono"
-                style={{
-                  width: '100%',
-                  border: '2px solid var(--border)',
-                  borderRadius: 14,
-                  textAlign: 'center',
-                  fontSize: 38,
-                  fontWeight: 700,
-                  color: 'var(--ink)',
-                  padding: '6px 0',
-                }}
-              />
-            </div>
-            <button
-              onClick={() => changeBy(1)}
-              style={{ width: 58, height: 58, borderRadius: 16, background: 'var(--ink)', color: '#fff', fontSize: 30, fontWeight: 800 }}
-            >
-              +
-            </button>
-          </div>
-
-          <div style={{ display: 'flex', gap: 9, justifyContent: 'center', marginBottom: 24 }}>
-            <span style={{ fontSize: 13, color: 'var(--text-soft)', fontWeight: 800, alignSelf: 'center', marginRight: 2 }}>Rápido</span>
-            {SHORTCUTS.map((n) => (
-              <button
-                key={n}
-                onClick={() => setQuantity(n)}
-                style={{ padding: '9px 18px', borderRadius: 11, border: '1px solid var(--border)', background: '#fff', fontSize: 15, fontWeight: 800, color: 'var(--ink)' }}
-              >
-                {n}
-              </button>
-            ))}
-          </div>
-
-          <button
-            disabled={safeQuantity < 1}
-            onClick={() => onConfirm(safeQuantity)}
-            className="btn-ink"
-            style={{ width: '100%', fontSize: 17, padding: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
-          >
-            Agregar al pedido <span className="mono">· {formatCurrency(subtotal)}</span>
-          </button>
-        </div>
+      <div className="qty-picker">
+        <button type="button" className="qty-picker__btn" onClick={() => changeBy(-1)} aria-label="Restar uno">
+          <svg width="24" height="24" aria-hidden="true"><use href="#ic-minus" /></svg>
+        </button>
+        <input
+          ref={inputRef}
+          type="number"
+          value={quantity}
+          onChange={handleInputChange}
+          className="qty-picker__input"
+          aria-label="Cantidad"
+        />
+        <button type="button" className="qty-picker__btn qty-picker__btn--plus" onClick={() => changeBy(1)} aria-label="Sumar uno">
+          <svg width="24" height="24" aria-hidden="true"><use href="#ic-plus" /></svg>
+        </button>
       </div>
-    </div>
+
+      <div className="qty-shortcuts">
+        <span className="qty-shortcuts__label">Rápido</span>
+        {SHORTCUTS.map((n) => (
+          <button key={n} type="button" className="qty-shortcuts__btn" onClick={() => setQuantity(n)}>
+            {n}
+          </button>
+        ))}
+      </div>
+    </Modal>
   )
 }
