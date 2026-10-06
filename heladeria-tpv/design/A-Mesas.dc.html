@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Propuesta A · Mesas</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{text-decoration:none}
+</style>
+</helmet>
+<div style="width:1366px;height:768px;box-sizing:border-box;display:flex;flex-direction:column;background:#F3F2F8;color:#1D1730;font-family:'DM Sans',system-ui,sans-serif;overflow:hidden">
+
+  <div style="height:64px;flex:none;box-sizing:border-box;padding:0 24px;display:flex;align-items:center;gap:28px;background:#FFFFFF;border-bottom:1px solid #E6E3EF">
+    <div style="display:flex;align-items:center;gap:10px">
+      <img src="/_blob/847adbcce4a77f962cb4f95a0183ef58" alt="Neveo" style="width:48px;height:48px;border-radius:12px;display:block">
+      <div style="display:flex;flex-direction:column;gap:3px">
+        
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;color:#6B6580;line-height:1">PUNTO DE VENTA</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:4px">
+      <sc-for list="{{ links }}" as="l" hint-placeholder-count="7">
+        <sc-if value="{{ l.isActive }}" hint-placeholder-val="{{ false }}">
+          <a href="#" style="padding:9px 14px;border-radius:10px;background:#ECE6F7;color:#4B2A86;font-size:14px;font-weight:700">{{ l.label }}</a>
+        </sc-if>
+        <sc-if value="{{ l.isPlain }}" hint-placeholder-val="{{ true }}">
+          <a href="#" style="padding:9px 14px;border-radius:10px;color:#4F4866;font-size:14px;font-weight:600">{{ l.label }}</a>
+        </sc-if>
+        <sc-if value="{{ l.isAlert }}" hint-placeholder-val="{{ false }}">
+          <a href="#" style="padding:9px 14px;border-radius:10px;color:#4F4866;font-size:14px;font-weight:600;display:flex;align-items:center;gap:7px">{{ l.label }}<span style="width:8px;height:8px;border-radius:999px;background:#E8A33D"></span></a>
+        </sc-if>
+      </sc-for>
+    </div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:16px">
+      <div style="display:flex;align-items:center;gap:10px;padding:7px 14px;border-radius:999px;background:#E7F6EE">
+        <span style="width:8px;height:8px;border-radius:999px;background:#1F9D6B"></span>
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <div style="font-size:13px;font-weight:700;color:#0F5F3F;line-height:1">Turno abierto</div>
+          <div style="font-size:12px;font-weight:500;color:#2F6F57;line-height:1">11:07 a. m. · Caja 01</div>
+        </div>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#4F4866">sáb. 27 jun 2026</div>
+    </div>
+  </div>
+
+  <div style="flex:1;min-height:0;box-sizing:border-box;padding:24px 32px 28px;display:flex;flex-direction:column;gap:20px">
+    <div style="height:44px;display:flex;align-items:center;gap:22px">
+      <div style="font-family:'Fraunces',Georgia,serif;font-size:38px;font-weight:800;letter-spacing:-0.01em;line-height:1">Mesas</div>
+      <div style="display:flex;align-items:center;gap:18px;font-size:13px;font-weight:600;color:#4F4866">
+        <div style="display:flex;align-items:center;gap:7px"><span style="width:10px;height:10px;border-radius:999px;background:#1F9D6B"></span>Disponible</div>
+        <div style="display:flex;align-items:center;gap:7px"><span style="width:10px;height:10px;border-radius:999px;background:#4B2A86"></span>Ocupada</div>
+      </div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:18px">
+        <div style="font-size:13px;font-weight:500;color:#6B6580">Arrastra las mesas para ordenarlas</div>
+        <div style="display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;background:#E7F6EE;color:#0F5F3F;font-size:14px;font-weight:700">
+          <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:none;stroke:#0F5F3F;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+          Cuenta guardada: $ 43.000
+        </div>
+      </div>
+    </div>
+
+    <div style="flex:1;min-height:0;position:relative;border-radius:20px;background-color:#FFFFFF;border:1px solid #E6E3EF;background-image:radial-gradient(#DAD6E6 1.2px, transparent 1.2px);background-size:24px 24px;overflow:hidden">
+
+      <sc-for list="{{ busy }}" as="t" hint-placeholder-count="4">
+        <div style="position:absolute;left:{{ t.x }}px;top:{{ t.y }}px;width:176px;height:116px;box-sizing:border-box;padding:14px 16px;border-radius:18px;background:#EFE8FB;border:1.5px solid #CDB9F0;box-shadow:0 6px 16px rgba(75,42,134,0.12);display:flex;flex-direction:column;justify-content:space-between">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="font-family:'Fraunces',Georgia,serif;font-size:21px;font-weight:800;color:#2B1659;line-height:1">{{ t.name }}</div>
+            <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:none;stroke:#8E7FB0;stroke-width:2.6;stroke-linecap:round"><path d="M9 6h.01 M15 6h.01 M9 12h.01 M15 12h.01 M9 18h.01 M15 18h.01"></path></svg>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start">
+            <div style="padding:3px 10px;border-radius:999px;background:#4B2A86;color:#FFFFFF;font-size:12px;font-weight:700">Ocupada</div>
+            <div style="font-size:22px;font-weight:800;color:#2B1659;font-variant-numeric:tabular-nums;line-height:1">{{ t.amount }}</div>
+          </div>
+        </div>
+      </sc-for>
+
+      <sc-for list="{{ free }}" as="t" hint-placeholder-count="4">
+        <div style="position:absolute;left:{{ t.x }}px;top:{{ t.y }}px;width:176px;height:116px;box-sizing:border-box;padding:14px 16px;border-radius:18px;background:#FFFFFF;border:1.5px solid #DAD6E6;display:flex;flex-direction:column;justify-content:space-between">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="font-family:'Fraunces',Georgia,serif;font-size:21px;font-weight:700;color:#1D1730;line-height:1">{{ t.name }}</div>
+            <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:none;stroke:#B6B0C8;stroke-width:2.6;stroke-linecap:round"><path d="M9 6h.01 M15 6h.01 M9 12h.01 M15 12h.01 M9 18h.01 M15 18h.01"></path></svg>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start">
+            <div style="padding:3px 10px;border-radius:999px;background:#E7F6EE;color:#0F5F3F;font-size:12px;font-weight:700">Disponible</div>
+            <div style="font-size:14px;font-weight:500;color:#6B6580;line-height:1">Sin pendiente</div>
+          </div>
+        </div>
+      </sc-for>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1366,"height":768}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      links: [
+        { label: 'Mesas', isActive: true, isPlain: false, isAlert: false },
+        { label: 'Turno', isActive: false, isPlain: true, isAlert: false },
+        { label: 'Cuadre de caja', isActive: false, isPlain: true, isAlert: false },
+        { label: 'Reportes', isActive: false, isPlain: true, isAlert: false },
+        { label: 'Análisis', isActive: false, isPlain: false, isAlert: true },
+        { label: 'Productos', isActive: false, isPlain: true, isAlert: false },
+        { label: 'Configuración', isActive: false, isPlain: true, isAlert: false }
+      ],
+      busy: [
+        { name: 'Cliente 1', amount: '$ 43.000', x: 48, y: 48 },
+        { name: 'Mesa 2', amount: '$ 32.500', x: 480, y: 120 },
+        { name: 'Mesa 4', amount: '$ 18.000', x: 264, y: 232 },
+        { name: 'Terraza 1', amount: '$ 61.900', x: 1000, y: 80 }
+      ],
+      free: [
+        { name: 'Mesa 1', x: 264, y: 48 },
+        { name: 'Mesa 3', x: 696, y: 48 },
+        { name: 'Barra', x: 48, y: 232 },
+        { name: 'Terraza 2', x: 1000, y: 264 }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

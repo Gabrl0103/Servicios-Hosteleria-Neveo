@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Propuesta A · Detalle de mesa</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{text-decoration:none}
+</style>
+</helmet>
+<div style="width:1366px;height:768px;box-sizing:border-box;display:flex;flex-direction:column;background:#F3F2F8;color:#1D1730;font-family:'DM Sans',system-ui,sans-serif;overflow:hidden">
+
+  <div style="height:64px;flex:none;box-sizing:border-box;padding:0 24px;display:flex;align-items:center;gap:28px;background:#FFFFFF;border-bottom:1px solid #E6E3EF">
+    <div style="display:flex;align-items:center;gap:10px">
+      <img src="/_blob/847adbcce4a77f962cb4f95a0183ef58" alt="Neveo" style="width:48px;height:48px;border-radius:12px;display:block">
+      <div style="display:flex;flex-direction:column;gap:3px">
+        
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;color:#6B6580;line-height:1">PUNTO DE VENTA</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:4px">
+      <sc-for list="{{ links }}" as="l" hint-placeholder-count="7">
+        <sc-if value="{{ l.isActive }}" hint-placeholder-val="{{ false }}">
+          <a href="#" style="padding:9px 14px;border-radius:10px;background:#ECE6F7;color:#4B2A86;font-size:14px;font-weight:700">{{ l.label }}</a>
+        </sc-if>
+        <sc-if value="{{ l.isPlain }}" hint-placeholder-val="{{ true }}">
+          <a href="#" style="padding:9px 14px;border-radius:10px;color:#4F4866;font-size:14px;font-weight:600">{{ l.label }}</a>
+        </sc-if>
+        <sc-if value="{{ l.isAlert }}" hint-placeholder-val="{{ false }}">
+          <a href="#" style="padding:9px 14px;border-radius:10px;color:#4F4866;font-size:14px;font-weight:600;display:flex;align-items:center;gap:7px">{{ l.label }}<span style="width:8px;height:8px;border-radius:999px;background:#E8A33D"></span></a>
+        </sc-if>
+      </sc-for>
+    </div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:16px">
+      <div style="display:flex;align-items:center;gap:10px;padding:7px 14px;border-radius:999px;background:#E7F6EE">
+        <span style="width:8px;height:8px;border-radius:999px;background:#1F9D6B"></span>
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <div style="font-size:13px;font-weight:700;color:#0F5F3F;line-height:1">Turno abierto</div>
+          <div style="font-size:12px;font-weight:500;color:#2F6F57;line-height:1">11:07 a. m. · Caja 01</div>
+        </div>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#4F4866">sáb. 27 jun 2026</div>
+    </div>
+  </div>
+
+  <div style="flex:1;min-height:0;display:flex">
+
+    <div style="width:92px;flex:none;box-sizing:border-box;padding:16px 8px;background:#2B1659;display:flex;flex-direction:column;align-items:center;gap:4px;overflow:hidden">
+      <div style="width:76px;box-sizing:border-box;padding:6px 0;border-radius:16px;background:rgba(255,255,255,0.14);display:flex;flex-direction:column;align-items:center;gap:4px">
+        <div style="width:44px;height:44px;border-radius:999px;background:#FFFFFF;display:flex;align-items:center;justify-content:center">
+          <svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:none;stroke:#4B2A86;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><path d="M4 4h6.5v6.5H4z M13.5 4H20v6.5h-6.5z M4 13.5h6.5V20H4z M13.5 13.5H20V20h-6.5z"></path></svg>
+        </div>
+        <div style="font-size:11px;font-weight:700;color:#FFFFFF;line-height:1.15;text-align:center">Todos</div>
+      </div>
+      <sc-for list="{{ rail }}" as="c" hint-placeholder-count="7">
+        <div style="width:76px;box-sizing:border-box;padding:6px 0;border-radius:16px;display:flex;flex-direction:column;align-items:center;gap:4px">
+          <div style="width:44px;height:44px;border-radius:999px;background:{{ c.bg }};display:flex;align-items:center;justify-content:center">
+            <svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:none;stroke:{{ c.fg }};stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><path d="{{ c.d }}"></path></svg>
+          </div>
+          <div style="font-size:11px;font-weight:600;color:#DCD3EE;line-height:1.15;text-align:center">{{ c.label }}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="flex:1;min-width:0;box-sizing:border-box;padding:24px 28px;display:flex;flex-direction:column;gap:20px">
+      <div style="height:44px;display:flex;align-items:center;gap:16px">
+        <button style="height:40px;padding:0 14px 0 10px;border-radius:12px;border:1px solid #DAD6E6;background:#FFFFFF;color:#1D1730;font-family:inherit;font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px;cursor:pointer">
+          <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:none;stroke:#1D1730;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round"><path d="M15 5l-7 7 7 7"></path></svg>
+          Mesas
+        </button>
+        <div style="font-family:'Fraunces',Georgia,serif;font-size:34px;font-weight:800;letter-spacing:-0.01em;line-height:1">Cliente 1</div>
+        <div style="display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:#E7F6EE;color:#0F5F3F;font-size:12px;font-weight:700">
+          <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:#0F5F3F;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+          Guardado
+        </div>
+        <label style="margin-left:auto;width:300px;height:44px;box-sizing:border-box;padding:0 14px;border-radius:12px;border:1px solid #DAD6E6;background:#FFFFFF;display:flex;align-items:center;gap:10px">
+          <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:none;stroke:#6B6580;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M11 4a7 7 0 1 0 0 14a7 7 0 1 0 0-14z M20 20l-4-4"></path></svg>
+          <input aria-label="Buscar producto" placeholder="Buscar producto" style="flex:1;min-width:0;border:none;outline:none;background:transparent;font-family:inherit;font-size:14px;color:#1D1730">
+        </label>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(4, minmax(0, 1fr));gap:16px">
+        <sc-for list="{{ products }}" as="p" hint-placeholder-count="12">
+          <div style="height:160px;box-sizing:border-box;padding:16px;border-radius:16px;background:#FFFFFF;border:1px solid #E7E4F0;box-shadow:0 2px 6px rgba(43,22,89,0.06);display:flex;flex-direction:column;justify-content:space-between">
+            <div style="display:flex;align-items:flex-start;gap:12px">
+              <div style="position:relative;width:48px;height:48px;flex:none">
+                <div style="width:48px;height:48px;border-radius:999px;background:{{ p.bg }};display:flex;align-items:center;justify-content:center">
+                  <svg viewBox="0 0 24 24" style="width:26px;height:26px;fill:none;stroke:{{ p.fg }};stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><path d="{{ p.d }}"></path></svg>
+                </div>
+                <sc-if value="{{ p.hasQty }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;right:-8px;bottom:-6px;min-width:22px;height:22px;box-sizing:border-box;padding:0 6px;border-radius:999px;border:2px solid #FFFFFF;background:#4B2A86;color:#FFFFFF;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center">×{{ p.qty }}</div>
+                </sc-if>
+              </div>
+              <div style="min-width:0;display:flex;flex-direction:column;gap:3px">
+                <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;color:#6B6580">{{ p.label }}</div>
+                <div style="font-family:'Fraunces',Georgia,serif;font-size:16px;font-weight:700;line-height:1.2">{{ p.name }}</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="font-size:18px;font-weight:800;font-variant-numeric:tabular-nums">{{ p.price }}</div>
+              <button aria-label="Agregar {{ p.name }}" style="width:38px;height:38px;border-radius:12px;border:none;background:#ECE6F7;display:flex;align-items:center;justify-content:center;cursor:pointer">
+                <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:none;stroke:#4B2A86;stroke-width:2.4;stroke-linecap:round"><path d="M12 5v14 M5 12h14"></path></svg>
+              </button>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="width:372px;flex:none;box-sizing:border-box;padding:20px;background:#FFFFFF;border-left:1px solid #E6E3EF;display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div style="font-family:'Fraunces',Georgia,serif;font-size:25px;font-weight:800;line-height:1.1">Pedido actual</div>
+        <div style="font-size:13px;font-weight:500;color:#6B6580">Cliente 1 · 4 productos</div>
+      </div>
+      <div style="flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;overflow:hidden">
+        <sc-for list="{{ cart }}" as="it" hint-placeholder-count="3">
+          <div style="box-sizing:border-box;padding:12px;border-radius:14px;background:#F7F6FB;display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:40px;height:40px;flex:none;border-radius:999px;background:{{ it.bg }};display:flex;align-items:center;justify-content:center">
+                <svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:none;stroke:{{ it.fg }};stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><path d="{{ it.d }}"></path></svg>
+              </div>
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                <div style="font-size:15px;font-weight:700">{{ it.name }}</div>
+                <div style="font-size:12px;font-weight:500;color:#6B6580">{{ it.unit }} c/u</div>
+              </div>
+              <div style="font-size:15px;font-weight:800;font-variant-numeric:tabular-nums">{{ it.total }}</div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="display:flex;align-items:center;border-radius:999px;border:1px solid #DAD6E6;background:#FFFFFF">
+                <button aria-label="Restar uno a {{ it.name }}" style="width:32px;height:30px;border:none;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer">
+                  <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:#1D1730;stroke-width:2.4;stroke-linecap:round"><path d="M5 12h14"></path></svg>
+                </button>
+                <div style="width:26px;text-align:center;font-size:14px;font-weight:800">{{ it.qty }}</div>
+                <button aria-label="Sumar uno a {{ it.name }}" style="width:32px;height:30px;border:none;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer">
+                  <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:#1D1730;stroke-width:2.4;stroke-linecap:round"><path d="M12 5v14 M5 12h14"></path></svg>
+                </button>
+              </div>
+              <button style="border:none;background:transparent;display:flex;align-items:center;gap:5px;font-family:inherit;font-size:13px;font-weight:600;color:#B4443F;cursor:pointer">
+                <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:#B4443F;stroke-width:2.4;stroke-linecap:round"><path d="M6 6l12 12 M18 6L6 18"></path></svg>
+                Quitar
+              </button>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="border-top:1px solid #E6E3EF;padding-top:16px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:baseline;justify-content:space-between">
+          <div style="font-size:14px;font-weight:600;color:#6B6580">Total pedido</div>
+          <div style="font-size:30px;font-weight:800;font-variant-numeric:tabular-nums">$ 43.000</div>
+        </div>
+        <button style="height:54px;border-radius:14px;border:none;background:#4B2A86;color:#FFFFFF;font-family:inherit;font-size:16px;font-weight:800;cursor:pointer">Cobrar este pedido</button>
+        <button style="height:46px;border-radius:14px;border:1.5px solid #4B2A86;background:#FFFFFF;color:#4B2A86;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer">Dejar en la cuenta</button>
+        <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:500;color:#6B6580">
+          <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:#1F9D6B;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+          Cada producto se guarda al tocarlo
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1366,"height":768}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const I = {
+      acai: 'M3.5 12.5h17a8.5 7.5 0 0 1-17 0z M6.8 9a1.2 1.2 0 1 0 2.4 0a1.2 1.2 0 1 0-2.4 0 M10.8 6.3a1.2 1.2 0 1 0 2.4 0a1.2 1.2 0 1 0-2.4 0 M14.8 9a1.2 1.2 0 1 0 2.4 0a1.2 1.2 0 1 0-2.4 0',
+      mix: 'M6.5 11h11l-1.8 8.5H8.3z M8 11a4 4 0 0 1 8 0 M11 4.3a1 1 0 1 0 2 0a1 1 0 1 0-2 0 M12 19.5V21.5 M9.5 21.5h5',
+      yogurt: 'M6.5 20.5h11l.9-5H5.6z M7 15.5c-1.2-.4-1.4-2.9.6-3.2h8.8c2 .3 1.8 2.8.6 3.2 M9 12.3c-.9-.7-.6-2.5 1-2.8h4c1.6.3 1.9 2.1 1 2.8 M10.6 9.5c.2-1.6.9-2.7 1.4-4 .5 1.3 1.2 2.4 1.4 4',
+      cookies: 'M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0 M8 9a1 1 0 1 0 2 0a1 1 0 1 0-2 0 M14 10a1 1 0 1 0 2 0a1 1 0 1 0-2 0 M9 15a1 1 0 1 0 2 0a1 1 0 1 0-2 0 M14.5 15.5a1 1 0 1 0 2 0a1 1 0 1 0-2 0',
+      cafe: 'M5 9h11v4.5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5z M16 10.5h1.5a2.5 2.5 0 0 1 0 5H16 M8 3.5v2.5 M12 3.5v2.5 M4 21h13',
+      toppings: 'M6 7.5l2.2 1.2 M14 4.8l.8 2.4 M18.5 10l-2.3.9 M6.5 14.5l1.4 2 M12 12l2.4 1.1 M10 19l.6-2.4 M17 17.5l2 1.4 M4.5 11l.4 2.4',
+      oblea: 'M5.5 3.5h13A1.5 1.5 0 0 1 20 5v14a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19V5a1.5 1.5 0 0 1 1.5-1.5z M4 9.2h16 M4 14.8h16 M9.7 3.5v17 M14.3 3.5v17'
+    };
+    const C = {
+      acai: { label: 'Açaí', d: I.acai, fg: '#6A3FB5', bg: '#EEE7FA' },
+      mix: { label: 'Mix', d: I.mix, fg: '#C2347F', bg: '#FCE6F1' },
+      yogurt: { label: 'Yogurt Helado', d: I.yogurt, fg: '#1F78C1', bg: '#E2F0FB' },
+      cookies: { label: 'Cookies', d: I.cookies, fg: '#A8641E', bg: '#FAEBD8' },
+      cafe: { label: 'Café', d: I.cafe, fg: '#6E4A33', bg: '#EEE3DA' },
+      toppings: { label: 'Toppings', d: I.toppings, fg: '#1F8A5C', bg: '#DCF3E7' },
+      oblea: { label: 'Oblea', d: I.oblea, fg: '#8F6F0A', bg: '#F8EFC8' }
+    };
+    const P = (name, k, price, qty) => ({
+      name: name, label: C[k].label.toUpperCase(), price: price,
+      d: C[k].d, fg: C[k].fg, bg: C[k].bg, qty: qty, hasQty: qty > 0
+    });
+    const L = (name, k, unit, qty, total) => ({
+      name: name, unit: unit, qty: qty, total: total, d: C[k].d, fg: C[k].fg, bg: C[k].bg
+    });
+    return {
+      links: [
+        { label: 'Mesas', isActive: true, isPlain: false, isAlert: false },
+        { label: 'Turno', isActive: false, isPlain: true, isAlert: false },
+        { label: 'Cuadre de caja', isActive: false, isPlain: true, isAlert: false },
+        { label: 'Reportes', isActive: false, isPlain: true, isAlert: false },
+        { label: 'Análisis', isActive: false, isPlain: false, isAlert: true },
+        { label: 'Productos', isActive: false, isPlain: true, isAlert: false },
+        { label: 'Configuración', isActive: false, isPlain: true, isAlert: false }
+      ],
+      rail: ['acai', 'mix', 'yogurt', 'cookies', 'cafe', 'toppings', 'oblea'].map((k) => C[k]),
+      products: [
+        P('Acai 9oz', 'acai', '$ 15.000', 2),
+        P('Acai 14oz', 'acai', '$ 17.900', 0),
+        P('Frozen 6oz', 'yogurt', '$ 6.500', 0),
+        P('Frozen 9oz', 'yogurt', '$ 9.000', 1),
+        P('Frozen 14oz', 'yogurt', '$ 13.900', 0),
+        P('Frozen Cookie', 'yogurt', '$ 15.000', 0),
+        P('Miti Miti 14oz', 'mix', '$ 16.500', 0),
+        P('Neveo Mix 9oz', 'mix', '$ 12.000', 0),
+        P('Cookie clásica', 'cookies', '$ 4.500', 0),
+        P('Americano', 'cafe', '$ 4.000', 1),
+        P('Topping fresa', 'toppings', '$ 2.000', 0),
+        P('Oblea con arequipe', 'oblea', '$ 7.500', 0)
+      ],
+      cart: [
+        L('Acai 9oz', 'acai', '$ 15.000', 2, '$ 30.000'),
+        L('Frozen 9oz', 'yogurt', '$ 9.000', 1, '$ 9.000'),
+        L('Americano', 'cafe', '$ 4.000', 1, '$ 4.000')
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
